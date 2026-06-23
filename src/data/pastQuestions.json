@@ -1,0 +1,710 @@
+{
+  "english": {
+    "2019": [
+      {
+        "question": "Which word best completes the sentence: 'The teacher asked us to ____ our homework before Monday.'",
+        "options": {
+          "A": "submit",
+          "B": "submitte",
+          "C": "submitted",
+          "D": "submitting"
+        },
+        "answer": "A",
+        "explanation": "The correct verb form after 'to' is the base form 'submit'."
+      },
+      {
+        "question": "Choose the correct passive form: 'They will build a new school.'",
+        "options": {
+          "A": "A new school will be built.",
+          "B": "A new school built.",
+          "C": "A new school is built.",
+          "D": "A new school will built."
+        },
+        "answer": "A",
+        "explanation": "The passive future form is 'will be built'."
+      },
+      {
+        "question": "What is the antonym of 'generous'?",
+        "options": {
+          "A": "kind",
+          "B": "stingy",
+          "C": "happy",
+          "D": "clever"
+        },
+        "answer": "B",
+        "explanation": "'Stingy' means not generous."
+      }
+    ],
+    "2020": [
+      {
+        "question": "Choose the correct reported speech: 'He said, \"I am tired.\"'",
+        "options": {
+          "A": "He said that he was tired.",
+          "B": "He said that he is tired.",
+          "C": "He said that he has tired.",
+          "D": "He said that he had tired."
+        },
+        "answer": "A",
+        "explanation": "In reported speech the present 'am' changes to 'was'."
+      },
+      {
+        "question": "Which sentence is correct?",
+        "options": {
+          "A": "She don't like beans.",
+          "B": "She doesn't like beans.",
+          "C": "She not likes beans.",
+          "D": "She doesn't likes beans."
+        },
+        "answer": "B",
+        "explanation": "Use 'doesn't' with the base verb 'like'."
+      },
+      {
+        "question": "What is the meaning of 'persuade'?",
+        "options": {
+          "A": "To make someone agree with you.",
+          "B": "To ignore somebody.",
+          "C": "To force someone to leave.",
+          "D": "To forget something."
+        },
+        "answer": "A",
+        "explanation": "'Persuade' means to convince someone to accept an idea."
+      }
+    ],
+    "2021": [
+      {
+        "question": "Identify the subject in this sentence: 'The students finished their exam early.'",
+        "options": {
+          "A": "students",
+          "B": "finished",
+          "C": "exam",
+          "D": "early"
+        },
+        "answer": "A",
+        "explanation": "The subject is who performs the action, which is 'The students'."
+      },
+      {
+        "question": "Pick the correct conjunction: 'He studied hard, ____ he passed the exam.'",
+        "options": {
+          "A": "and",
+          "B": "but",
+          "C": "so",
+          "D": "or"
+        },
+        "answer": "C",
+        "explanation": "'So' shows result: he studied hard and therefore passed."
+      },
+      {
+        "question": "What is the plural of 'child'?",
+        "options": {
+          "A": "childs",
+          "B": "children",
+          "C": "childes",
+          "D": "childrens"
+        },
+        "answer": "B",
+        "explanation": "The correct plural is 'children'."
+      }
+    ],
+    "2022": [
+      {
+        "question": "Which sentence uses the correct form of the verb?",
+        "options": {
+          "A": "He have finished his homework.",
+          "B": "He has finished his homework.",
+          "C": "He had finish his homework.",
+          "D": "He have finish his homework."
+        },
+        "answer": "B",
+        "explanation": "'He has finished' is the correct present perfect form."
+      },
+      {
+        "question": "Choose the correct synonym for 'brave'.",
+        "options": {
+          "A": "timid",
+          "B": "courageous",
+          "C": "lazy",
+          "D": "noisy"
+        },
+        "answer": "B",
+        "explanation": "'Courageous' means brave."
+      },
+      {
+        "question": "Which sentence is an example of direct speech?",
+        "options": {
+          "A": "She said that she would come.",
+          "B": "She asked whether he was ready.",
+          "C": "She said, \"I will come.\"",
+          "D": "She told him she will come."
+        },
+        "answer": "C",
+        "explanation": "Direct speech repeats the exact words said, inside quotation marks."
+      }
+    ],
+    "2023": [
+      {
+        "question": "Identify the correct sentence: 'They _____ to the market yesterday.'",
+        "options": {
+          "A": "go",
+          "B": "went",
+          "C": "gone",
+          "D": "going"
+        },
+        "answer": "B",
+        "explanation": "The past tense of 'go' is 'went'."
+      },
+      {
+        "question": "What does the word 'accurate' mean?",
+        "options": {
+          "A": "wrong",
+          "B": "exact",
+          "C": "quick",
+          "D": "easy"
+        },
+        "answer": "B",
+        "explanation": "'Accurate' means exact or correct."
+      },
+      {
+        "question": "Choose the correct relative pronoun: 'The book ____ I borrowed was useful.'",
+        "options": {
+          "A": "who",
+          "B": "which",
+          "C": "whose",
+          "D": "when"
+        },
+        "answer": "B",
+        "explanation": "Use 'which' for a thing (the book) in a defining relative clause."
+      }
+    ]
+  },
+  "maths": {
+    "2019": [
+      {
+        "question": "What is 12 + 15?",
+        "options": {
+          "A": "25",
+          "B": "27",
+          "C": "28",
+          "D": "30"
+        },
+        "answer": "B",
+        "explanation": "12 plus 15 equals 27."
+      },
+      {
+        "question": "Solve: 7 x 8 = ?",
+        "options": {
+          "A": "54",
+          "B": "56",
+          "C": "58",
+          "D": "63"
+        },
+        "answer": "B",
+        "explanation": "7 times 8 is 56."
+      },
+      {
+        "question": "What is the value of x if x + 5 = 12?",
+        "options": {
+          "A": "5",
+          "B": "6",
+          "C": "7",
+          "D": "8"
+        },
+        "answer": "C",
+        "explanation": "Subtract 5 from 12 to get x = 7."
+      }
+    ],
+    "2020": [
+      {
+        "question": "The perimeter of a square is 20 cm. What is the length of one side?",
+        "options": {
+          "A": "4 cm",
+          "B": "5 cm",
+          "C": "6 cm",
+          "D": "8 cm"
+        },
+        "answer": "B",
+        "explanation": "A square has 4 equal sides, 20 ÷ 4 = 5."
+      },
+      {
+        "question": "What is 9²?",
+        "options": {
+          "A": "18",
+          "B": "27",
+          "C": "81",
+          "D": "99"
+        },
+        "answer": "C",
+        "explanation": "9 squared is 81."
+      },
+      {
+        "question": "Which number is prime?",
+        "options": {
+          "A": "15",
+          "B": "21",
+          "C": "17",
+          "D": "27"
+        },
+        "answer": "C",
+        "explanation": "17 has no divisors other than 1 and itself."
+      }
+    ],
+    "2021": [
+      {
+        "question": "What is the value of 45 ÷ 9?",
+        "options": {
+          "A": "4",
+          "B": "5",
+          "C": "6",
+          "D": "9"
+        },
+        "answer": "B",
+        "explanation": "45 divided by 9 equals 5."
+      },
+      {
+        "question": "Find the smallest even number greater than 10.",
+        "options": {
+          "A": "10",
+          "B": "11",
+          "C": "12",
+          "D": "14"
+        },
+        "answer": "C",
+        "explanation": "12 is the first even number bigger than 10."
+      },
+      {
+        "question": "What is 3/4 of 20?",
+        "options": {
+          "A": "10",
+          "B": "12",
+          "C": "14",
+          "D": "15"
+        },
+        "answer": "D",
+        "explanation": "3/4 of 20 is 15."
+      }
+    ],
+    "2022": [
+      {
+        "question": "A triangle has angles 40° and 60°. What is the third angle?",
+        "options": {
+          "A": "70°",
+          "B": "80°",
+          "C": "90°",
+          "D": "100°"
+        },
+        "answer": "B",
+        "explanation": "Triangle angles sum to 180, so 180 - 100 = 80."
+      },
+      {
+        "question": "What is 5 x 5 x 5?",
+        "options": {
+          "A": "25",
+          "B": "50",
+          "C": "75",
+          "D": "125"
+        },
+        "answer": "D",
+        "explanation": "5 x 5 x 5 equals 125."
+      },
+      {
+        "question": "Which fraction is equal to 0.5?",
+        "options": {
+          "A": "1/4",
+          "B": "1/2",
+          "C": "2/5",
+          "D": "3/5"
+        },
+        "answer": "B",
+        "explanation": "0.5 is the same as one half."
+      }
+    ],
+    "2023": [
+      {
+        "question": "What is the area of a rectangle with length 6 cm and width 4 cm?",
+        "options": {
+          "A": "10 cm²",
+          "B": "20 cm²",
+          "C": "24 cm²",
+          "D": "30 cm²"
+        },
+        "answer": "C",
+        "explanation": "Area = length x width = 6 x 4 = 24."
+      },
+      {
+        "question": "Convert 1/5 to a decimal.",
+        "options": {
+          "A": "0.1",
+          "B": "0.2",
+          "C": "0.25",
+          "D": "0.5"
+        },
+        "answer": "B",
+        "explanation": "1 divided by 5 is 0.2."
+      },
+      {
+        "question": "What is the next number in the sequence: 2, 4, 6, 8, ?",
+        "options": {
+          "A": "9",
+          "B": "10",
+          "C": "12",
+          "D": "14"
+        },
+        "answer": "B",
+        "explanation": "The sequence increases by 2 each time, so next is 10."
+      }
+    ]
+  },
+  "physics": {
+    "2019": [
+      {
+        "question": "What is the SI unit of force?",
+        "options": {
+          "A": "Joule",
+          "B": "Newton",
+          "C": "Watt",
+          "D": "Pascal"
+        },
+        "answer": "B",
+        "explanation": "The SI unit of force is Newton."
+      },
+      {
+        "question": "Which of these is a form of energy?",
+        "options": {
+          "A": "Mass",
+          "B": "Time",
+          "C": "Kinetic",
+          "D": "Distance"
+        },
+        "answer": "C",
+        "explanation": "Kinetic energy is the energy of motion."
+      },
+      {
+        "question": "A ball falls freely. Which force acts on it?",
+        "options": {
+          "A": "Friction",
+          "B": "Magnetism",
+          "C": "Gravity",
+          "D": "Tension"
+        },
+        "answer": "C",
+        "explanation": "Gravity pulls the ball downward."
+      }
+    ],
+    "2020": [
+      {
+        "question": "What does a lens do to light rays?",
+        "options": {
+          "A": "Absorbs them",
+          "B": "Reflects them",
+          "C": "Refracts them",
+          "D": "Blocks them"
+        },
+        "answer": "C",
+        "explanation": "A lens bends (refracts) light rays."
+      },
+      {
+        "question": "Which material is a good conductor of electricity?",
+        "options": {
+          "A": "Wood",
+          "B": "Glass",
+          "C": "Copper",
+          "D": "Rubber"
+        },
+        "answer": "C",
+        "explanation": "Copper conducts electricity well."
+      },
+      {
+        "question": "What is the normal human eye focused on?",
+        "options": {
+          "A": "Infrared light",
+          "B": "Visible light",
+          "C": "Ultraviolet light",
+          "D": "Microwaves"
+        },
+        "answer": "B",
+        "explanation": "The eye is sensitive to visible light."
+      }
+    ],
+    "2021": [
+      {
+        "question":"What is the process by which heat passes through a solid?",
+        "options": {
+          "A":"Conduction",
+          "B":"Convection",
+          "C":"Radiation",
+          "D":"Reflection"
+        },
+        "answer":"A",
+        "explanation":"Heat transfer through a solid is called conduction."
+      },
+      {
+        "question":"Which part of the atom carries a negative charge?",
+        "options": {
+          "A":"Proton",
+          "B":"Neutron",
+          "C":"Electron",
+          "D":"Nucleus"
+        },
+        "answer":"C",
+        "explanation":"Electrons have negative charge."
+      },
+      {
+        "question":"What is the speed of light in vacuum?",
+        "options": {
+          "A":"300,000 m/s",
+          "B":"300,000 km/s",
+          "C":"3,000 km/s",
+          "D":"30,000 km/s"
+        },
+        "answer":"B",
+        "explanation":"The speed of light is about 300,000 km/s."
+      }
+    ],
+    "2022": [
+      {
+        "question":"What happens to the pressure of a gas if volume decreases and temperature stays the same?",
+        "options": {
+          "A":"Pressure decreases",
+          "B":"Pressure remains same",
+          "C":"Pressure increases",
+          "D":"Pressure changes randomly"
+        },
+        "answer":"C",
+        "explanation":"Compressing a gas increases its pressure."
+      },
+      {
+        "question":"Which instrument measures electric current?",
+        "options": {
+          "A":"Voltmeter",
+          "B":"Ammeter",
+          "C":"Ohmmeter",
+          "D":"Thermometer"
+        },
+        "answer":"B",
+        "explanation":"An ammeter measures current."
+      },
+      {
+        "question":"What is the unit of electric charge?",
+        "options": {
+          "A":"Volt",
+          "B":"Ohm",
+          "C":"Coulomb",
+          "D":"Watt"
+        },
+        "answer":"C",
+        "explanation":"Electric charge is measured in coulombs."
+      }
+    ],
+    "2023": [
+      {
+        "question":"Which of these is a renewable energy source?",
+        "options": {
+          "A":"Coal",
+          "B":"Oil",
+          "C":"Solar",
+          "D":"Natural gas"
+        },
+        "answer":"C",
+        "explanation":"Solar energy is renewable."
+      },
+      {
+        "question":"What force keeps the planets in orbit around the sun?",
+        "options": {
+          "A":"Friction",
+          "B":"Gravity",
+          "C":"Magnetism",
+          "D":"Electricity"
+        },
+        "answer":"B",
+        "explanation":"Gravity pulls planets toward the sun."
+      },
+      {
+        "question":"What is the name of the energy stored in a stretched spring?",
+        "options": {
+          "A":"Chemical energy",
+          "B":"Thermal energy",
+          "C":"Elastic potential energy",
+          "D":"Sound energy"
+        },
+        "answer":"C",
+        "explanation":"A stretched spring stores elastic potential energy."
+      }
+    ]
+  },
+  "chemistry": {
+    "2019": [
+      {
+        "question":"What is the chemical symbol for water?",
+        "options": {
+          "A":"HO",
+          "B":"H2O",
+          "C":"O2",
+          "D":"H2"
+        },
+        "answer":"B",
+        "explanation":"Water is H2O."
+      },
+      {
+        "question":"Which of these is an acid?",
+        "options": {
+          "A":"Sodium hydroxide",
+          "B":"Hydrochloric acid",
+          "C":"Sodium chloride",
+          "D":"Water"
+        },
+        "answer":"B",
+        "explanation":"Hydrochloric acid is a strong acid."
+      },
+      {
+        "question":"What gas is produced by vinegar and baking soda?",
+        "options": {
+          "A":"Oxygen",
+          "B":"Hydrogen",
+          "C":"Carbon dioxide",
+          "D":"Nitrogen"
+        },
+        "answer":"C",
+        "explanation":"Vinegar and baking soda react to produce carbon dioxide gas."
+      }
+    ],
+    "2020": [
+      {
+        "question":"What is the pH of pure water?",
+        "options": {
+          "A":"1",
+          "B":"7",
+          "C":"14",
+          "D":"0"
+        },
+        "answer":"B",
+        "explanation":"Pure water has a neutral pH of 7."
+      },
+      {
+        "question":"Which state of matter has a fixed volume but no fixed shape?",
+        "options": {
+          "A":"Solid",
+          "B":"Liquid",
+          "C":"Gas",
+          "D":"Plasma"
+        },
+        "answer":"B",
+        "explanation":"Liquids take the shape of their container but keep volume."
+      },
+      {
+        "question":"Which element is represented by the symbol Na?",
+        "options": {
+          "A":"Nitrogen",
+          "B":"Sodium",
+          "C":"Neon",
+          "D":"Nickel"
+        },
+        "answer":"B",
+        "explanation":"Na is the chemical symbol for sodium."
+      }
+    ],
+    "2021": [
+      {
+        "question":"What is an example of a mixture?",
+        "options": {
+          "A":"Pure water",
+          "B":"Salt",
+          "C":"Air",
+          "D":"Diamond"
+        },
+        "answer":"C",
+        "explanation":"Air is a mixture of gases."
+      },
+      {
+        "question":"What is the main gas in the Earth’s atmosphere?",
+        "options": {
+          "A":"Oxygen",
+          "B":"Nitrogen",
+          "C":"Carbon dioxide",
+          "D":"Hydrogen"
+        },
+        "answer":"B",
+        "explanation":"Nitrogen makes up about 78% of the air."
+      },
+      {
+        "question":"Which particle has no electric charge?",
+        "options": {
+          "A":"Proton",
+          "B":"Electron",
+          "C":"Neutron",
+          "D":"Ion"
+        },
+        "answer":"C",
+        "explanation":"Neutrons are neutral particles."
+      }
+    ],
+    "2022": [
+      {
+        "question":"What is the result of a physical change?",
+        "options": {
+          "A":"A new substance forms",
+          "B":"Only appearance changes",
+          "C":"A gas is always produced",
+          "D":"The substance becomes acidic"
+        },
+        "answer":"B",
+        "explanation":"Physical changes do not make new substances."
+      },
+      {
+        "question":"Which of these is a metal?",
+        "options": {
+          "A":"Sulfur",
+          "B":"Iron",
+          "C":"Phosphorus",
+          "D":"Chlorine"
+        },
+        "answer":"B",
+        "explanation":"Iron is a metal."
+      },
+      {
+        "question":"What is the formula for table salt?",
+        "options": {
+          "A":"NaCl",
+          "B":"KCl",
+          "C":"HCl",
+          "D":"NaOH"
+        },
+        "answer":"A",
+        "explanation":"Table salt is sodium chloride, NaCl."
+      }
+    ],
+    "2023": [
+      {
+        "question":"What is the atom made of?",
+        "options": {
+          "A":"Electrons, protons, and neutrons",
+          "B":"Only protons",
+          "C":"Only electrons",
+          "D":"Only neutrons"
+        },
+        "answer":"A",
+        "explanation":"Atoms contain electrons, protons, and neutrons."
+      },
+      {
+        "question":"What type of bond shares electrons between atoms?",
+        "options": {
+          "A":"Ionic bond",
+          "B":"Covalent bond",
+          "C":"Metallic bond",
+          "D":"Hydrogen bond"
+        },
+        "answer":"B",
+        "explanation":"Covalent bonds share electrons."
+      },
+      {
+        "question":"Which is a noble gas?",
+        "options": {
+          "A":"Oxygen",
+          "B":"Nitrogen",
+          "C":"Argon",
+          "D":"Hydrogen"
+        },
+        "answer":"C",
+        "explanation":"Argon is a noble gas."
+      }
+    ]
+  }
+}
