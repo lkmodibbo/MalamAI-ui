@@ -129,6 +129,13 @@ export default function SubjectScreen({ navigation }) {
                 </View>
               </TouchableOpacity>
 
+              <TouchableOpacity
+                style={styles.pastExamBtn}
+                onPress={() => navigation.navigate('PastExam', { subject: s })}
+              >
+                <Text style={styles.pastExamBtnText}>📜 Past Questions</Text>
+              </TouchableOpacity>
+
               {/* Topics list */}
               {isOpen && (
                 <View style={styles.topicsContainer}>
@@ -359,4 +366,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
+  pastExamBtn: {
+  backgroundColor: COLORS.accent,
+  borderRadius:    20,
+  paddingVertical:   8,
+  paddingHorizontal: 14,
+  marginTop:         8,
+  alignItems:        'center',
+},
+pastExamBtnText: {
+  color:      COLORS.primary,
+  fontWeight: '700',
+  fontSize:   12,
+},
 });

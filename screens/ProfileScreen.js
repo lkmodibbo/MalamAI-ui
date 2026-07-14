@@ -325,7 +325,8 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.tagsRow}>
             {selectedTags.map((s) => (
               <View key={s.id} style={styles.tagChip}>
-                <Text style={styles.tagText}>{s.emoji} {s.name}</Text>
+                <Text style={{ fontSize: 14 }}>{s.emoji}</Text>
+                <Text style={styles.tagText} numberOfLines={1}>{s.name}</Text>
               </View>
             ))}
           </View>
@@ -585,16 +586,24 @@ const styles = StyleSheet.create({
   saveBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 14 },
 
   // Subjects
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   tagChip: {
+    width: '48%',
     backgroundColor: '#f4f6fb',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#dde3ef',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  tagText: { color: '#1b2a4a', fontWeight: '600', fontSize: 11 },
+  tagText: { color: '#1b2a4a', fontWeight: '600', fontSize: 12, flex: 1 },
   editHint: { color: '#8aab8a', fontSize: 12, marginBottom: 10, marginTop: 4 },
   subjectGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   subjectChip: {

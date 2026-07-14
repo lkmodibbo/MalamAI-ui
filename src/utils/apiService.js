@@ -118,6 +118,40 @@ export async function getQuizHistory() {
 export async function getQuizStats() {
   return await request('/quiz/stats');
 }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PAST EXAM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export async function getPastExamYears(subjectId) {
+  return await request(`/past-exams/years/${subjectId}`);
+}
+
+export async function getPastExamQuestions(subjectId, year) {
+  return await request(
+    `/past-exams/questions?subject_id=${subjectId}&year=${year}`
+  );
+}
+
+export async function submitPastExam(subjectId, year, answers, timeTaken) {
+  return await request('/past-exams/submit', {
+    method: 'POST',
+    body: JSON.stringify({
+      subject_id: subjectId,
+      year,
+      answers,
+      time_taken: timeTaken,
+    }),
+  });
+}
+
+export async function getPastExamHistory() {
+  return await request('/past-exams/history');
+}
+
+export async function getPastExamStats() {
+  return await request('/past-exams/stats');
+}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // FETCH QUESTIONS FROM BACKEND
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

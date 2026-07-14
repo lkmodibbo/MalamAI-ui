@@ -24,6 +24,7 @@ import ScoreScreen from './screens/ScoreScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 import { isOnboardingComplete } from './src/hooks/useStudentProfile';
+import PastExamScreen from './screens/PastExamScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -153,6 +154,7 @@ export default function App() {
         <Stack.Screen name="Review" component={ReviewScreen} />
         <Stack.Screen name="Score" component={ScoreScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name='PastExam' component={PastExamScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
