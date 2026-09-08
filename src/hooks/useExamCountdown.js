@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getProfileKey } from './useStudentProfile';
+import { hasAuthToken, saveProfileRemote } from '../services/apiService';
+import useIsMounted from './useIsMounted';
 
 const EXAM_DATE_KEY = 'exam_date';
 const EXAM_START_KEY = 'exam_start_date';
@@ -73,6 +75,7 @@ export default function useExamCountdown() {
   const [examDate, setExamDateState] = useState(null);
   const [startDate, setStartDateState] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isMounted = useIsMounted();
 
   const loadDates = useCallback(async () => {
     // Try dedicated key first, fall back to student_profile
@@ -84,10 +87,11 @@ export default function useExamCountdown() {
       await persistDate(EXAM_DATE_KEY, storedExam);
     }
 
+    if (!isMounted()) return;
     setExamDateState(storedExam);
     setStartDateState(storedStart);
     setLoading(false);
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     loadDates();
@@ -103,13 +107,22 @@ export default function useExamCountdown() {
     // Write to both keys so both hooks stay in sync
     await persistDate(EXAM_DATE_KEY, parsed);
     await persistDateToProfile(parsed);
+    try {
+      if (await hasAuthToken()) {
+        await saveProfileRemote({ examDate: parsed.toISOString() });
+      }
+    } catch (error) {
+      console.warn('[useExamCountdown] remote exam date sync skipped', error.message);
+    }
     if (!startDate) {
       await persistDate(EXAM_START_KEY, existingStart);
     }
-    setExamDateState(parsed);
-    setStartDateState(existingStart);
+    if (isMounted()) {
+      setExamDateState(parsed);
+      setStartDateState(existingStart);
+    }
     return parsed;
-  }, [startDate]);
+  }, [startDate, isMounted]);
 
   const daysRemaining = useMemo(() => {
     if (!examDate) return null;

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deleteNoteRemote, getNotesRemote, hasAuthToken, saveNoteRemote } from '../services/apiService';
+import useIsMounted from './useIsMounted';
 
 const NOTES_PREFIX = 'notes_';
 
@@ -15,7 +17,7 @@ function noteKey(subjectId, topic) {
   return `${NOTES_PREFIX}${String(subjectId || 'unknown')}_${slugify(topic || 'general')}`;
 }
 
-async function parseStoredNoteValue(value) {
+function parseStoredNoteValue(value) {
   try {
     return JSON.parse(value);
   } catch (error) {
@@ -55,7 +57,6 @@ function groupNotesBySubject(notes) {
       acc[subjectKey] = {
         subjectId: note.subjectId,
         subjectName: note.subjectName,
-        subjectEmoji: note.subjectEmoji,
         notes: [],
       };
     }
@@ -72,14 +73,41 @@ function groupNotesBySubject(notes) {
 export default function useNotes() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isMounted = useIsMounted();
 
   const refreshNotes = useCallback(async () => {
-    const allNotes = await queryNotes();
+    let allNotes = await queryNotes();
+    try {
+      if (await hasAuthToken()) {
+        const remote = await getNotesRemote();
+        const remoteNotes = (remote.notes || []).map((note) => ({
+          key: noteKey(note.subject_id, note.topic),
+          topic: note.topic,
+          subjectId: note.subject_id,
+          subjectName: note.subject_name,
+          note: note.note,
+          timestamp: Number(note.timestamp) || Date.now(),
+        }));
+        const remoteKeys = new Set(remoteNotes.map((note) => note.key));
+        const localOnly = allNotes.filter((note) => !remoteKeys.has(note.key) && note.note);
+        await Promise.all(localOnly.map((note) => saveNoteRemote(note).catch(() => null)));
+        allNotes = [...remoteNotes, ...localOnly];
+        if (allNotes.length > 0) {
+          await AsyncStorage.multiSet(
+            allNotes.map((note) => [note.key, JSON.stringify(note)])
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[useNotes] remote load skipped', error.message);
+    }
     const grouped = groupNotesBySubject(allNotes);
-    setNotes(grouped);
-    setLoading(false);
+    if (isMounted()) {
+      setNotes(grouped);
+      setLoading(false);
+    }
     return grouped;
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     refreshNotes();
@@ -95,12 +123,16 @@ export default function useNotes() {
       topic: String(topic).trim(),
       subjectId: String(subject.id || '').trim(),
       subjectName: String(subject.name || '').trim(),
-      subjectEmoji: String(subject.emoji || '').trim(),
       note: String(noteText || '').trim(),
       timestamp: Date.now(),
     };
 
     await AsyncStorage.setItem(key, JSON.stringify(entry));
+    try {
+      await saveNoteRemote(entry);
+    } catch (error) {
+      console.warn('[useNotes] remote save skipped', error.message);
+    }
     await refreshNotes();
     return entry;
   }, [refreshNotes]);
@@ -116,6 +148,11 @@ export default function useNotes() {
 
     const key = noteKey(subject.id, topic);
     await AsyncStorage.removeItem(key);
+    try {
+      await deleteNoteRemote(subject.id, topic);
+    } catch (error) {
+      console.warn('[useNotes] remote delete skipped', error.message);
+    }
     await refreshNotes();
   }, [refreshNotes]);
 
@@ -127,7 +164,7 @@ export default function useNotes() {
     if (!subject || !topic) return null;
     const key = noteKey(subject.id, topic);
     const raw = await AsyncStorage.getItem(key);
-    const note = raw ? await parseStoredNoteValue(raw) : null;
+    const note = raw ? parseStoredNoteValue(raw) : null;
     return note ? { key, ...note } : null;
   }, []);
 

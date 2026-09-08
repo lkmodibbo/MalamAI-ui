@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getProfileRemote, hasAuthToken, saveProfileRemote } from '../services/apiService';
+import useIsMounted from './useIsMounted';
 
 const PROFILE_KEY = 'student_profile';
 const ONBOARDING_KEY = 'onboarding_complete';
@@ -88,6 +90,23 @@ export async function saveProfile(profile) {
     if (normalized.examDate) {
       await AsyncStorage.setItem(await getScopedKey('exam_date'), normalized.examDate);
     }
+    try {
+      if (await hasAuthToken()) {
+        const remoteAvatar = normalized.avatarUri
+          && (normalized.avatarUri.startsWith('http://') || normalized.avatarUri.startsWith('https://'))
+          ? normalized.avatarUri
+          : undefined;
+        await saveProfileRemote({
+          name: normalized.name,
+          examDate: normalized.examDate,
+          selectedSubjects: normalized.selectedSubjects,
+          avatarUri: remoteAvatar,
+          onboardingComplete: profile.onboardingComplete,
+        });
+      }
+    } catch (error) {
+      console.warn('[useStudentProfile] remote save skipped', error.message);
+    }
     return {
       name: normalized.name,
       selectedSubjects: normalized.selectedSubjects,
@@ -123,12 +142,44 @@ export async function setOnboardingComplete(value = true) {
 export default function useStudentProfile() {
   const [profile, setProfile] = useState({ name: '', selectedSubjects: ['english'], examDate: null });
   const [loading, setLoading] = useState(true);
+  const isMounted = useIsMounted();
 
   const loadProfile = useCallback(async () => {
-    const nextProfile = await getProfile();
+    let nextProfile = await getProfile();
+    try {
+      if (!(await hasAuthToken())) {
+        if (isMounted()) {
+          setProfile(nextProfile);
+          setLoading(false);
+        }
+        return;
+      }
+      const remote = await getProfileRemote();
+      const remoteProfile = remote?.profile;
+      if (remoteProfile) {
+        nextProfile = {
+          name: remoteProfile.name || nextProfile.name,
+          selectedSubjects: remoteProfile.selectedSubjects?.length
+            ? remoteProfile.selectedSubjects
+            : nextProfile.selectedSubjects,
+          examDate: remoteProfile.examDate ? new Date(remoteProfile.examDate) : nextProfile.examDate,
+          avatarUri: remoteProfile.avatarUri || nextProfile.avatarUri,
+        };
+        const key = await getProfileKey();
+        await AsyncStorage.setItem(key, JSON.stringify({
+          name: nextProfile.name,
+          selectedSubjects: nextProfile.selectedSubjects,
+          examDate: nextProfile.examDate ? nextProfile.examDate.toISOString() : null,
+          avatarUri: nextProfile.avatarUri || null,
+        }));
+      }
+    } catch (error) {
+      console.warn('[useStudentProfile] remote load skipped', error.message);
+    }
+    if (!isMounted()) return;
     setProfile(nextProfile);
     setLoading(false);
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     loadProfile();
@@ -136,9 +187,9 @@ export default function useStudentProfile() {
 
   const saveProfileState = useCallback(async (nextProfile) => {
     const saved = await saveProfile({ ...profile, ...nextProfile });
-    setProfile(saved);
+    if (isMounted()) setProfile(saved);
     return saved;
-  }, [profile]);
+  }, [profile, isMounted]);
 
   return {
     profile,

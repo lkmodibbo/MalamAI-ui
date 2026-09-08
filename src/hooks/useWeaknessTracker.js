@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SUBJECTS from '../constants/subjects';
+import useIsMounted from './useIsMounted';
 
 const WEAKNESS_LOG_KEY = 'weakness_log';
 const MAX_WEAKNESS_ENTRIES = 200;
@@ -32,7 +34,11 @@ function summarizeWeakTopics(entries) {
   entries.forEach((entry) => {
     const topic = String(entry.topic || '').trim();
     const subjectId = String(entry.subjectId || '').trim();
-    const subjectName = String(entry.subjectName || '').trim();
+    // Older log entries were written without a subject name; recover it from the id
+    // so subject badges have something to render.
+    const subjectName = String(entry.subjectName || '').trim()
+      || SUBJECTS.find((item) => item.id === subjectId)?.name
+      || '';
     const key = `${subjectId}||${topic}`;
     const existing = map.get(key) || {
       topic,
@@ -56,14 +62,17 @@ function summarizeWeakTopics(entries) {
 export default function useWeaknessTracker() {
   const [weakTopics, setWeakTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isMounted = useIsMounted();
 
   const refreshWeakTopics = useCallback(async () => {
     const entries = await getStoredWeaknessLog();
     const summary = summarizeWeakTopics(entries);
-    setWeakTopics(summary);
-    setLoading(false);
+    if (isMounted()) {
+      setWeakTopics(summary);
+      setLoading(false);
+    }
     return summary;
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     refreshWeakTopics();
@@ -85,9 +94,9 @@ export default function useWeaknessTracker() {
     ].slice(-MAX_WEAKNESS_ENTRIES);
 
     await persistWeaknessLog(nextEntries);
-    setWeakTopics(summarizeWeakTopics(nextEntries));
+    if (isMounted()) setWeakTopics(summarizeWeakTopics(nextEntries));
     return nextEntries;
-  }, []);
+  }, [isMounted]);
 
   const getWeakTopics = useCallback(async () => {
     const entries = await getStoredWeaknessLog();

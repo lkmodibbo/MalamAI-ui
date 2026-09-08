@@ -1,24 +1,27 @@
 export const COLORS = {
-  primary:     '#1b2a4a',  // navy — headers, buttons, main nav
-  secondary:   '#2e4a7a',  // mid navy — active states, icons
-  accent:      '#2e4a7a',  // navy blue — replaces gold/yellow for CTAs
-  background:  '#ffffff',  // white — all screen backgrounds
-  surface:     '#f4f6fb',  // soft gray — cards, content areas
-  border:      '#dde3ef',  // card borders, dividers
-  selected:    '#e6f0ff',  // selected answer option fill
-  correct:     '#27ae60',  // correct answer
-  correctBg:   '#eafaf1',  // correct answer background
-  wrong:       '#e74c3c',  // wrong answer
-  wrongBg:     '#fdf0f0',  // wrong answer background
-  textPrimary: '#1b2a4a',  // main body text
-  textMuted:   '#6b7c9a',  // secondary text, labels
-  textLight:   '#8ba3c7',  // hints, placeholders, disabled
-  textWhite:   '#ffffff',  // text on dark backgrounds
-  accentText:  '#ffffff',  // text on navy accent
-  navInactive: '#8ba3c7',  // inactive bottom nav
-  timerNormal: '#1b2a4a',  // countdown timer
-  timerLow:    '#e74c3c',  // timer under 60s
-  timerBgLow:  '#fdf0f0',  // timer bg when low
-  disabled:    '#c5cfe0',  // disabled buttons
-  shadow:      '#000000',  // shadow base
+  primary:     '#14283D',  // ink navy — heroes, headers, dark cards
+  secondary:   '#1A4D4A',  // deep teal — icons, secondary actions
+  accent:      '#0F8A72',  // bright teal — tabs, chips, CTAs
+  gold:        '#C4A35A',  // warm gold — badges, admin labels
+  adminHero:   '#0F3D38',  // deep teal-ink — admin profile/hero
+  background:  '#F4F7F5',  // warm paper
+  surface:     '#E8F0EC',  // sage wash — tiles, inputs
+  border:      '#D2DDD7',  // soft sage border
+  selected:    '#D5F0E8',  // selected option fill
+  correct:     '#1E8449',
+  correctBg:   '#EAF6EF',
+  wrong:       '#C0392B',
+  wrongBg:     '#FDF0F0',
+  textPrimary: '#14283D',
+  textMuted:   '#5A6B68',
+  textLight:   '#7D8E8A',
+  textWhite:   '#FFFFFF',
+  textOnDark:  '#E6F4EF',
+  accentText:  '#FFFFFF',
+  navInactive: '#7D8E8A',
+  timerNormal: '#14283D',
+  timerLow:    '#C0392B',
+  timerBgLow:  '#FDF0F0',
+  disabled:    '#B5C4BF',
+  shadow:      '#14283D',
 };
