@@ -35,7 +35,17 @@ export default function AdminLeaderboardScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity
+          style={styles.adminOpenBtn}
+          onPress={() => {
+            if (navigation.canGoBack && navigation.canGoBack()) navigation.goBack();
+            else (navigation.getParent() || navigation).navigate('AdminDashboard');
+          }}
+        >
+          <Text style={styles.adminOpenBtnText}>‹</Text>
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, paddingHorizontal: 8 }}>
           <Text style={styles.headerEyebrow}>Admin</Text>
           <Text style={styles.headerTitle}>Leaderboard</Text>
         </View>

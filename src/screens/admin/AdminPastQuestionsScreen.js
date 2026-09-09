@@ -27,7 +27,7 @@ const EMPTY_FORM = {
   explanation: '',
 };
 
-export default function AdminPastQuestionsScreen() {
+export default function AdminPastQuestionsScreen({ navigation }) {
   const [tab, setTab] = useState('upload');
   const [form, setForm] = useState(EMPTY_FORM);
   const [bulkText, setBulkText] = useState('');
@@ -150,10 +150,21 @@ export default function AdminPastQuestionsScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity
+          style={styles.adminOpenBtn}
+          onPress={() => {
+            if (navigation.canGoBack && navigation.canGoBack()) navigation.goBack();
+            else (navigation.getParent() || navigation).navigate('AdminDashboard');
+          }}
+        >
+          <Text style={styles.adminOpenBtnText}>‹</Text>
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, paddingHorizontal: 8 }}>
           <Text style={styles.headerEyebrow}>Admin</Text>
           <Text style={styles.headerTitle}>Past questions</Text>
         </View>
+
         <Text style={styles.muted}>{total} in bank</Text>
       </View>
 

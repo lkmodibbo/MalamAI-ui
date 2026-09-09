@@ -316,7 +316,7 @@ export default function LandingScreen({ navigation }) {
           </View>
 
           <Text style={styles.dashboardSectionTitle}>Your subjects</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subjectRail}>
+          <View style={styles.subjectGrid}>
             {selectedSubjects.map((subject) => (
               <TouchableOpacity key={subject.id} style={styles.dashboardSubjectCard} onPress={() => openSubject(subject)}>
                 <SubjectBadge name={subject.name} size="md" />
@@ -329,7 +329,7 @@ export default function LandingScreen({ navigation }) {
               <Text style={styles.dashboardSubjectName}>Edit subjects</Text>
               <Text style={styles.dashboardSubjectMeta}>Profile</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
 
           <TodaysPlanCard
             weakTopics={weakTopics}
@@ -730,13 +730,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: 10,
   },
-  subjectRail: {
-    gap: 10,
-    paddingRight: 16,
+  subjectGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     marginBottom: 18,
   },
   dashboardSubjectCard: {
-    width: 142,
+    flexBasis: '48%',
     minHeight: 120,
     backgroundColor: '#F3F7F5',
     borderWidth: 1,
@@ -744,6 +745,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   addSubjectCard: {
     backgroundColor: '#ffffff',
