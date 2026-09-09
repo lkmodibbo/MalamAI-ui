@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, RefreshControl, Alert,
+  View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, RefreshControl, Alert, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import {
   addAdminTopic,
   bulkAddAdminPracticeQuestions,
   deleteAdminPracticeQuestion,
+  restoreAdminPracticeQuestion,
   deleteAdminSubject,
   deleteAdminTopic,
   getAdminOverview,
@@ -42,17 +43,22 @@ export default function AdminContentScreen({ navigation }) {
     explanation: '',
   });
   const [bulkText, setBulkText] = useState('');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedQuestions, setSelectedQuestions] = useState(new Set());
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvContent, setCsvContent] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     setError('');
     try {
-      const [overview, topicData, questionData] = await Promise.all([
-        getAdminOverview(),
-        getAdminTopics(subjectFilter),
-        getAdminPracticeQuestions({ subject: subjectFilter, limit: 20 }),
-      ]);
+        const [overview, topicData, questionData] = await Promise.all([
+          getAdminOverview(),
+          getAdminTopics(subjectFilter),
+          getAdminPracticeQuestions({ subject: subjectFilter, limit: 20, deleted: tab === 'trash' }),
+        ]);
       setSubjects(overview.subjects || []);
       setTopics(topicData.topics || []);
       setQuestions(questionData.questions || []);
@@ -69,6 +75,75 @@ export default function AdminContentScreen({ navigation }) {
   const flash = (text) => {
     setMessage(text);
     setTimeout(() => setMessage(''), 2500);
+  };
+
+  const toggleSelectQuestion = (id) => {
+    setSelectedQuestions((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const buildQuestionsCSV = (items) => {
+    const escape = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = typeof v === 'string' ? v : JSON.stringify(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    const header = ['id','subject_id','topic_id','question','option_a','option_b','option_c','option_d','answer','explanation','year','created_at'];
+    const lines = [header.join(',')];
+    for (const it of items) {
+      lines.push([
+        it.id,
+        it.subject_id || it.subject_name || '',
+        it.topic_id || '',
+        it.question || '',
+        it.option_a || '',
+        it.option_b || '',
+        it.option_c || '',
+        it.option_d || '',
+        it.answer || '',
+        it.explanation || '',
+        it.year || '',
+        it.created_at || '',
+      ].map(escape).join(','));
+    }
+    return lines.join('\n');
+  };
+
+  const exportSelectedQuestions = () => {
+    const sel = questions.filter((q) => selectedQuestions.has(q.id));
+    if (sel.length === 0) return Alert.alert('No selection', 'Pick some questions to export.');
+    setExporting(true);
+    try {
+      const csv = buildQuestionsCSV(sel);
+      setCsvContent(csv);
+      setCsvOpen(true);
+    } catch (err) {
+      Alert.alert('Error', err.message || 'Could not build CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const deleteSelectedQuestions = async () => {
+    const sel = Array.from(selectedQuestions);
+    if (sel.length === 0) return Alert.alert('No selection', 'Pick some questions to delete.');
+    Alert.alert('Confirm delete', `Delete ${sel.length} questions? This will soft-delete them.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await Promise.all(sel.map((id) => deleteAdminPracticeQuestion(id)));
+          setSelectedQuestions(new Set());
+          setSelectMode(false);
+          load();
+        } catch (err) {
+          Alert.alert('Error', err.message || 'Bulk delete failed');
+        }
+      } }
+    ]);
   };
 
   const confirmDelete = (title, onYes) => {
@@ -94,7 +169,7 @@ export default function AdminContentScreen({ navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} />}
       >
         <View style={styles.tabRow}>
-          {['subjects', 'topics', 'questions'].map((item) => (
+          {['subjects', 'topics', 'questions', 'trash'].map((item) => (
             <TouchableOpacity
               key={item}
               style={[styles.tab, tab === item && styles.tabOn]}
@@ -227,6 +302,17 @@ export default function AdminContentScreen({ navigation }) {
 
         {tab === 'questions' ? (
           <>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <TouchableOpacity style={[styles.smallPill, { marginRight: 8 }]} onPress={() => { setSelectMode((s) => !s); if (selectMode) setSelectedQuestions(new Set()); }}>
+                <Text style={styles.smallPillText}>{selectMode ? 'Cancel' : 'Select'}</Text>
+              </TouchableOpacity>
+              {selectMode ? (
+                <>
+                  <TouchableOpacity style={[styles.primaryBtn, { marginRight: 8 }]} onPress={exportSelectedQuestions}><Text style={styles.primaryBtnText}>{exporting ? 'Exporting...' : 'Export'}</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.dangerBtn} onPress={deleteSelectedQuestions}><Text style={styles.dangerBtnText}>Delete</Text></TouchableOpacity>
+                </>
+              ) : null}
+            </View>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Add practice question</Text>
               <TextInput style={[styles.input, styles.textarea]} multiline placeholder="Question" placeholderTextColor="#7D8E8A" value={questionForm.question} onChangeText={(v) => setQuestionForm((p) => ({ ...p, question: v }))} />
@@ -303,16 +389,63 @@ export default function AdminContentScreen({ navigation }) {
 
             {questions.map((item) => (
               <View key={item.id} style={styles.card}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                  {selectMode ? (
+                    <TouchableOpacity onPress={() => toggleSelectQuestion(item.id)} style={{ width: 36, alignItems: 'center', justifyContent: 'center' }}>
+                      <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 1, borderColor: '#cbd5e1', backgroundColor: selectedQuestions.has(item.id) ? '#14283D' : '#fff' }} />
+                    </TouchableOpacity>
+                  ) : null}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.listMeta}>{item.subject_name || item.subject_id}</Text>
+                    <Text style={[styles.listTitle, { marginTop: 6 }]}>{item.question}</Text>
+                  </View>
+                </View>
+                {!selectMode ? (
+                  <TouchableOpacity
+                    style={[styles.dangerBtn, { marginTop: 10, alignSelf: 'flex-start' }]}
+                    onPress={() => confirmDelete('Delete question?', async () => {
+                      await deleteAdminPracticeQuestion(item.id);
+                      load();
+                    })}
+                  >
+                    <Text style={styles.dangerBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ))}
+          </>
+        ) : null}
+
+        <Modal visible={csvOpen} animationType="slide" onRequestClose={() => setCsvOpen(false)}>
+          <View style={{ flex: 1 }}>
+            <View style={{ padding: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 18, fontWeight: '700' }}>Exported CSV</Text>
+              <TouchableOpacity onPress={() => setCsvOpen(false)}><Text style={{ color: '#0b5' }}>Close</Text></TouchableOpacity>
+            </View>
+            <ScrollView style={{ padding: 12 }}>
+              <TextInput value={csvContent} multiline editable={false} style={{ minHeight: 300, borderWidth: 1, borderColor: '#eee', padding: 8 }} />
+            </ScrollView>
+          </View>
+        </Modal>
+
+        {tab === 'trash' ? (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Trash — practice questions</Text>
+              <Text style={styles.muted}>Soft-deleted practice questions. You can restore them.</Text>
+            </View>
+            {questions.map((item) => (
+              <View key={item.id} style={styles.card}>
                 <Text style={styles.listMeta}>{item.subject_name || item.subject_id}</Text>
                 <Text style={[styles.listTitle, { marginTop: 6 }]}>{item.question}</Text>
                 <TouchableOpacity
-                  style={[styles.dangerBtn, { marginTop: 10, alignSelf: 'flex-start' }]}
-                  onPress={() => confirmDelete('Delete question?', async () => {
-                    await deleteAdminPracticeQuestion(item.id);
-                    load();
-                  })}
+                  style={[styles.primaryBtn, { marginTop: 10, alignSelf: 'flex-start' }]}
+                  onPress={() => Alert.alert('Restore question', 'Restore this question?', [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Restore', onPress: async () => { await restoreAdminPracticeQuestion(item.id); load(); } },
+                  ])}
                 >
-                  <Text style={styles.dangerBtnText}>Delete</Text>
+                  <Text style={styles.primaryBtnText}>Restore</Text>
                 </TouchableOpacity>
               </View>
             ))}

@@ -39,6 +39,7 @@ import AdminUserDetailScreen from '../screens/admin/AdminUserDetailScreen';
 import AdminLeaderboardScreen from '../screens/admin/AdminLeaderboardScreen';
 import AdminPastQuestionsScreen from '../screens/admin/AdminPastQuestionsScreen';
 import AdminContentScreen from '../screens/admin/AdminContentScreen';
+import AdminAuditScreen from '../screens/admin/AdminAuditScreen';
 import AdminSidebar from '../components/AdminSidebar';
 
 const Stack = createNativeStackNavigator();
@@ -148,6 +149,9 @@ function AdminTabs() {
           <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUpload')}>
             <Text style={adminStyles.sidebarItemText}>Upload</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminAudit')}>
+            <Text style={adminStyles.sidebarItemText}>Audit</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity style={adminStyles.openSidebarButton} onPress={() => setSidebarOpen(true)}>
@@ -164,6 +168,7 @@ function AdminTabs() {
           <Tab.Screen name="AdminUsers" component={AdminUsersScreen} />
           <Tab.Screen name="AdminBoard" component={AdminLeaderboardScreen} />
           <Tab.Screen name="AdminUpload" component={AdminPastQuestionsScreen} />
+          <Tab.Screen name="AdminAudit" component={AdminAuditScreen} />
           <Tab.Screen name="AdminContent" component={AdminContentScreen} />
         </Tab.Navigator>
       </View>

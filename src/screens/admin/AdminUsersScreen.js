@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
-  ActivityIndicator, RefreshControl,
+  View, Text, FlatList, TouchableOpacity, TextInput,
+  ActivityIndicator, Alert,
+  Modal, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { getAdminUsers } from '../../services/apiService';
+import { getAdminUsers, changeAdminUserRole, getMe } from '../../services/apiService';
 import SUBJECTS from '../../constants/subjects';
 import { adminStyles as styles } from './adminStyles';
 
@@ -31,6 +32,12 @@ export default function AdminUsersScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [changingUserId, setChangingUserId] = useState(null);
+  const [currentAdminId, setCurrentAdminId] = useState(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvContent, setCsvContent] = useState('');
 
   const load = useCallback(async (nextPage = 1, isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -50,6 +57,19 @@ export default function AdminUsersScreen({ navigation }) {
   }, [query]);
 
   useFocusEffect(useCallback(() => { load(1); }, [load]));
+
+  useFocusEffect(useCallback(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const me = await getMe();
+        if (mounted) setCurrentAdminId(me?.id || null);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, []));
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -72,11 +92,7 @@ export default function AdminUsersScreen({ navigation }) {
         <Text style={styles.muted}>{total} registered</Text>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(1, true)} />}
-      >
+      <View style={styles.content}>
         <View style={styles.searchBox}>
           <TextInput
             style={styles.searchInput}
@@ -87,40 +103,130 @@ export default function AdminUsersScreen({ navigation }) {
             onSubmitEditing={() => load(1)}
             returnKeyType="search"
           />
+      const toggleSelect = (id) => {
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      };
+
+      const buildCSV = (items) => {
+        const escape = (v) => {
+          if (v === null || v === undefined) return '';
+          const s = typeof v === 'string' ? v : JSON.stringify(v);
+          return `"${s.replace(/"/g, '""')}"`;
+        };
+        const header = ['id','name','email','is_verified','is_admin','created_at','selected_subjects','quiz_count'];
+        const lines = [header.join(',')];
+        for (const it of items) {
+          lines.push([
+            it.id,
+            it.name,
+            it.email,
+            it.is_verified,
+            it.is_admin,
+            it.created_at || '',
+            JSON.stringify(it.selected_subjects || []),
+            it.quiz_count || 0,
+          ].map(escape).join(','));
+        }
+        return lines.join('\n');
+      };
+
+      const exportSelected = () => {
+        const sel = users.filter((u) => selectedIds.has(u.id));
+        if (sel.length === 0) return Alert.alert('No selection', 'Pick some users to export.');
+        setExporting(true);
+        try {
+          const csv = buildCSV(sel);
+          setCsvContent(csv);
+          setCsvOpen(true);
+        } catch (err) {
+          Alert.alert('Error', err.message || 'Could not build CSV');
+        } finally {
+          setExporting(false);
+        }
+      };
         </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {loading && users.length === 0 ? <ActivityIndicator color="#14283D" /> : null}
         {!loading && users.length === 0 ? <Text style={styles.empty}>No users found.</Text> : null}
 
-        {users.map((user) => (
-          <TouchableOpacity
-            key={user.id}
-            style={styles.listRow}
-            onPress={() => (navigation.getParent() || navigation).navigate('AdminUserDetail', { userId: user.id })}
-          >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials(user.name)}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.listTitle} numberOfLines={1}>{user.name}</Text>
-              <Text style={styles.listMeta} numberOfLines={1}>{user.email}</Text>
-              <Text style={styles.listMeta} numberOfLines={1}>
-                {user.selected_subjects?.length || 0} subjects
-                {user.selected_subjects?.length ? ` · ${subjectNames(user.selected_subjects)}` : ''}
-                {` · ${user.quiz_count} quizzes`}
-              </Text>
-            </View>
-            <Text style={styles.chevron}>→</Text>
-          </TouchableOpacity>
-        ))}
+        <FlatList
+          data={users}
+          keyExtractor={(item) => String(item.id)}
+          onEndReached={() => { if (!loading && users.length < total) load(page + 1); }}
+          onEndReachedThreshold={0.5}
+          refreshing={refreshing}
+          onRefresh={() => load(1, true)}
+          renderItem={({ item: user }) => (
+            <TouchableOpacity
+              style={styles.listRow}
+              onPress={() => (navigation.getParent() || navigation).navigate('AdminUserDetail', { userId: user.id })}
+            >
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initials(user.name)}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.listTitle} numberOfLines={1}>{user.name}</Text>
+                <Text style={styles.listMeta} numberOfLines={1}>{user.email}</Text>
+                <Text style={styles.listMeta} numberOfLines={1}>
+                  {user.selected_subjects?.length || 0} subjects
+                  {user.selected_subjects?.length ? ` · ${subjectNames(user.selected_subjects)}` : ''}
+                  {` · ${user.quiz_count} quizzes`}
+                </Text>
+              </View>
+              <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+                {changingUserId === user.id ? (
+                  <ActivityIndicator />
+                ) : (
+                  {user.id === currentAdminId && user.is_admin ? (
+                    <View style={[styles.smallPill, { backgroundColor: '#F3F4F6' }]}>
+                      <Text style={[styles.smallPillText, { color: '#6B7280' }]}>You</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.smallPill, { backgroundColor: user.is_admin ? '#E6F2FF' : '#14283D' }]}
+                      onPress={() => {
+                        const willDemote = user.is_admin;
+                        const doChange = async () => {
+                          try {
+                            setChangingUserId(user.id);
+                            await changeAdminUserRole(user.id, !user.is_admin);
+                            setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_admin: !u.is_admin } : u)));
+                          } catch (err) {
+                            Alert.alert('Error', err.message || 'Failed to change role');
+                          } finally {
+                            setChangingUserId(null);
+                          }
+                        };
 
-        {users.length < total ? (
-          <TouchableOpacity style={styles.primaryBtn} onPress={() => load(page + 1)}>
-            <Text style={styles.primaryBtnText}>Load more</Text>
-          </TouchableOpacity>
-        ) : null}
-      </ScrollView>
+                        if (willDemote) {
+                          Alert.alert(
+                            'Confirm demotion',
+                            `Are you sure you want to remove admin rights from ${user.name}?`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Demote', style: 'destructive', onPress: doChange },
+                            ]
+                          );
+                        } else {
+                          doChange();
+                        }
+                      }}
+                    >
+                      <Text style={[styles.smallPillText, { color: user.is_admin ? '#0B4A6F' : '#fff' }]}>{user.is_admin ? 'Admin' : 'Make admin'}</Text>
+                    </TouchableOpacity>
+                  )}
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 }

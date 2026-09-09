@@ -375,6 +375,14 @@ export async function getAdminUsers(page = 1, limit = 20, q = '') {
   return await request(`/admin/users?${params}`, { requireAuth: true });
 }
 
+export async function changeAdminUserRole(userId, isAdmin) {
+  return await request(`/admin/users/${encodeURIComponent(userId)}/role`, {
+    method: 'POST',
+    requireAuth: true,
+    body: JSON.stringify({ is_admin: !!isAdmin }),
+  });
+}
+
 export async function getAdminUser(id) {
   return await request(`/admin/users/${id}`, { requireAuth: true });
 }
@@ -388,12 +396,51 @@ export async function getAdminPastOverview() {
   return await request('/admin/past-questions/overview', { requireAuth: true });
 }
 
-export async function getAdminPastQuestions({ subject, year, q, page = 1, limit = 20 } = {}) {
+export async function getAdminPastQuestions({ subject, year, q, page = 1, limit = 20, deleted = false } = {}) {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (subject) params.set('subject', subject);
   if (year) params.set('year', String(year));
   if (q) params.set('q', q);
+  if (deleted) params.set('deleted', '1');
   return await request(`/admin/past-questions?${params}`, { requireAuth: true });
+}
+
+export async function getAdminAudit({ page = 1, limit = 50, action = '', resource = '' } = {}) {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (action) params.set('action', action);
+  if (resource) params.set('resource', resource);
+  return await request(`/admin/audit?${params}`, { requireAuth: true });
+}
+
+export async function getAdminAuditCSV({ action = '', resource = '' } = {}) {
+  const params = new URLSearchParams();
+  if (action) params.set('action', action);
+  if (resource) params.set('resource', resource);
+
+  const token = await getToken();
+  const headers = {
+    'Content-Type': 'text/csv',
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}/admin/audit/export?${params}`, { headers, signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const txt = await res.text();
+      let json = {};
+      try { json = JSON.parse(txt); } catch {}
+      throw new Error(json.error || txt || 'Could not export CSV');
+    }
+    return await res.text();
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('The server took too long to respond.');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function addAdminPastQuestion(payload) {
@@ -417,6 +464,10 @@ export async function deleteAdminPastQuestion(id) {
     method: 'DELETE',
     requireAuth: true,
   });
+}
+
+export async function restoreAdminPastQuestion(id) {
+  return await request(`/admin/past-questions/${id}/restore`, { method: 'POST', requireAuth: true });
 }
 
 export async function sendAdminAnnouncement({ title, message, type = 'info' }) {
@@ -460,10 +511,11 @@ export async function deleteAdminTopic(id) {
   return await request(`/admin/topics/${id}`, { method: 'DELETE', requireAuth: true });
 }
 
-export async function getAdminPracticeQuestions({ subject, topic, page = 1, limit = 20 } = {}) {
+export async function getAdminPracticeQuestions({ subject, topic, page = 1, limit = 20, deleted = false } = {}) {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (subject) params.set('subject', subject);
   if (topic) params.set('topic', String(topic));
+  if (deleted) params.set('deleted', '1');
   return await request(`/admin/questions?${params}`, { requireAuth: true });
 }
 
@@ -485,6 +537,10 @@ export async function bulkAddAdminPracticeQuestions(questions) {
 
 export async function deleteAdminPracticeQuestion(id) {
   return await request(`/admin/questions/${id}`, { method: 'DELETE', requireAuth: true });
+}
+
+export async function restoreAdminPracticeQuestion(id) {
+  return await request(`/admin/questions/${id}/restore`, { method: 'POST', requireAuth: true });
 }
 
 export async function saveAiQuestions(subjectId, topicId, questions) {

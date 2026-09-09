@@ -2,7 +2,8 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { getAdminUser } from '../../services/apiService';
+import { getAdminUser, changeAdminUserRole, getMe } from '../../services/apiService';
+import { Alert } from 'react-native';
 import SUBJECTS from '../../constants/subjects';
 import SubjectBadge from '../../components/SubjectBadge';
 import { adminStyles as styles } from './adminStyles';
@@ -30,6 +31,8 @@ export default function AdminUserDetailScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [changingRole, setChangingRole] = useState(false);
+  const [currentAdminId, setCurrentAdminId] = useState(null);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -46,6 +49,48 @@ export default function AdminUserDetailScreen({ navigation, route }) {
   }, [userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  useFocusEffect(useCallback(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const me = await getMe();
+        if (mounted) setCurrentAdminId(me?.id || null);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, []));
+
+  const handleToggleRole = () => {
+    if (!user) return;
+    const willDemote = user.is_admin;
+    if (willDemote) {
+      Alert.alert(
+        'Confirm demotion',
+        `Remove admin privileges from ${user.name}? This cannot be undone here.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Demote', style: 'destructive', onPress: () => changeRole() },
+        ]
+      );
+    } else {
+      changeRole();
+    }
+  };
+
+  const changeRole = async () => {
+    try {
+      setChangingRole(true);
+      await changeAdminUserRole(user.id, !user.is_admin);
+      setData((d) => ({ ...d, user: { ...d.user, is_admin: !d.user.is_admin } }));
+    } catch (err) {
+      Alert.alert('Error', err.message || 'Could not change role.');
+    } finally {
+      setChangingRole(false);
+    }
+  };
 
   const user = data?.user;
   const stats = data?.stats;
@@ -96,6 +141,22 @@ export default function AdminUserDetailScreen({ navigation, route }) {
               ) : (
                 <Text style={styles.muted}>No subjects selected yet.</Text>
               )}
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Admin controls</Text>
+              <Text style={styles.muted}>Toggle admin access for this user.</Text>
+              <View style={{ marginTop: 12 }}>
+                <TouchableOpacity
+                  style={[styles.smallPill, { backgroundColor: user.is_admin ? '#E6F2FF' : '#14283D' }]}
+                  onPress={handleToggleRole}
+                  disabled={changingRole || (user.id === currentAdminId && user.is_admin)}
+                >
+                  <Text style={[styles.smallPillText, { color: user.is_admin ? '#0B4A6F' : '#fff' }]}>
+                    {user.id === currentAdminId && user.is_admin ? 'You' : (user.is_admin ? 'Revoke admin' : 'Grant admin')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.statGrid}>

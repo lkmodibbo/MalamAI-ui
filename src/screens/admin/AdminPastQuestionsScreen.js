@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
+  View, Text, ScrollView, FlatList, TouchableOpacity, TextInput,
   ActivityIndicator, RefreshControl, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import {
   addAdminPastQuestion,
   bulkAddAdminPastQuestions,
   deleteAdminPastQuestion,
+  restoreAdminPastQuestion,
   getAdminPastOverview,
   getAdminPastQuestions,
 } from '../../services/apiService';
@@ -51,7 +52,7 @@ export default function AdminPastQuestionsScreen({ navigation }) {
     try {
       const [board, list] = await Promise.all([
         getAdminPastOverview(),
-        getAdminPastQuestions({ subject: filterSubject, page: nextPage, limit: 15 }),
+        getAdminPastQuestions({ subject: filterSubject, page: nextPage, limit: 15, deleted: tab === 'trash' }),
       ]);
       setOverview(board.overview || []);
       setLibrary(nextPage === 1 ? (list.questions || []) : (prev) => [...prev, ...(list.questions || [])]);
@@ -63,7 +64,7 @@ export default function AdminPastQuestionsScreen({ navigation }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filterSubject]);
+  }, [filterSubject, tab]);
 
   useFocusEffect(useCallback(() => {
     loadLibrary(1);
@@ -179,6 +180,9 @@ export default function AdminPastQuestionsScreen({ navigation }) {
           </TouchableOpacity>
           <TouchableOpacity style={[styles.tab, tab === 'library' && styles.tabOn]} onPress={() => setTab('library')}>
             <Text style={[styles.tabText, tab === 'library' && styles.tabTextOn]}>Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.tab, tab === 'trash' && styles.tabOn]} onPress={() => setTab('trash')}>
+            <Text style={[styles.tabText, tab === 'trash' && styles.tabTextOn]}>Trash</Text>
           </TouchableOpacity>
         </View>
 
@@ -332,25 +336,44 @@ export default function AdminPastQuestionsScreen({ navigation }) {
             </ScrollView>
 
             {loading && library.length === 0 ? <ActivityIndicator color="#14283D" /> : null}
-            {library.map((item) => (
-              <View key={item.id} style={styles.card}>
-                <Text style={styles.listMeta}>{subjectName(item.subject_id)} · {item.year} · {item.answer}</Text>
-                <Text style={[styles.listTitle, { marginTop: 6 }]}>{item.question}</Text>
-                <Text style={styles.listMeta}>A. {item.option_a}</Text>
-                <Text style={styles.listMeta}>B. {item.option_b}</Text>
-                <Text style={styles.listMeta}>C. {item.option_c}</Text>
-                <Text style={styles.listMeta}>D. {item.option_d}</Text>
-                <TouchableOpacity style={[styles.dangerBtn, { marginTop: 10, alignSelf: 'flex-start' }]} onPress={() => handleDelete(item)}>
-                  <Text style={styles.dangerBtnText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            {library.length < total ? (
-              <TouchableOpacity style={styles.primaryBtn} onPress={() => loadLibrary(page + 1)}>
-                <Text style={styles.primaryBtnText}>Load more</Text>
-              </TouchableOpacity>
-            ) : null}
+            <FlatList
+              data={library}
+              keyExtractor={(item) => String(item.id)}
+              onEndReached={() => { if (!loading && library.length < total) loadLibrary(page + 1); }}
+              onEndReachedThreshold={0.5}
+              refreshing={refreshing}
+              onRefresh={() => loadLibrary(1, true)}
+              renderItem={({ item }) => (
+                <View key={item.id} style={styles.card}>
+                  <Text style={styles.listMeta}>{subjectName(item.subject_id)} · {item.year} · {item.answer}</Text>
+                  <Text style={[styles.listTitle, { marginTop: 6 }]}>{item.question}</Text>
+                  <Text style={styles.listMeta}>A. {item.option_a}</Text>
+                  <Text style={styles.listMeta}>B. {item.option_b}</Text>
+                  <Text style={styles.listMeta}>C. {item.option_c}</Text>
+                  <Text style={styles.listMeta}>D. {item.option_d}</Text>
+                  {tab === 'trash' ? (
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, { marginTop: 10, alignSelf: 'flex-start', paddingHorizontal: 12 }]}
+                      onPress={async () => {
+                        try {
+                          await restoreAdminPastQuestion(item.id);
+                          setLibrary((prev) => prev.filter((row) => row.id !== item.id));
+                          setTotal((n) => Math.max(0, n - 1));
+                        } catch (err) {
+                          setError(err.message || 'Restore failed.');
+                        }
+                      }}
+                    >
+                      <Text style={styles.primaryBtnText}>Restore</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity style={[styles.dangerBtn, { marginTop: 10, alignSelf: 'flex-start' }]} onPress={() => handleDelete(item)}>
+                      <Text style={styles.dangerBtnText}>Delete</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            />
           </>
         )}
       </ScrollView>
