@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSubjects from '../hooks/useSubjects';
 import SubjectBadge from '../components/SubjectBadge';
+import Skeleton from '../components/Skeleton';
 
 export default function MockSetupScreen({ navigation }) {
-  const SUBJECTS = useSubjects();
+  const { subjects: SUBJECTS, loading: subjectsLoading } = useSubjects();
   const [selected, setSelected] = useState(['english', 'mathematics', 'physics', 'chemistry']);
 
   const toggle = (id) => {
@@ -64,7 +65,9 @@ export default function MockSetupScreen({ navigation }) {
         </View>
 
         {/* Subject list */}
-        {SUBJECTS.map((s) => {
+        {subjectsLoading ? (
+          <Skeleton style={{ marginTop: 12, height: 14, width: '40%' }} />
+        ) : SUBJECTS.map((s) => {
           const on = selected.includes(s.id);
           return (
             <TouchableOpacity

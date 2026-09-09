@@ -1,18 +1,33 @@
 import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SUBJECTS from '../constants/subjects';
 import { getSubjects } from '../services/apiService';
 
 // Four screens use this hook and each remount refetches. Holding the merged
 // result here keeps navigation between them from hitting the network again.
 let cachedSubjects = null;
+const SUBJECTS_CACHE_KEY = 'subjects_cache';
 
 export default function useSubjects() {
   const [subjects, setSubjects] = useState(cachedSubjects || SUBJECTS);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
     async function load() {
+      // Try to hydrate from AsyncStorage first for offline support.
+      try {
+        if (!cachedSubjects) {
+          const raw = await AsyncStorage.getItem(SUBJECTS_CACHE_KEY);
+          if (raw) {
+            cachedSubjects = JSON.parse(raw);
+            if (mounted) setSubjects(cachedSubjects);
+          }
+        }
+      } catch (err) {
+        // ignore storage errors and continue to network fetch
+      }
       try {
         const data = await getSubjects();
         const rows = data.subjects || [];
@@ -37,6 +52,12 @@ export default function useSubjects() {
         });
 
         cachedSubjects = merged;
+        // persist merged subjects for offline use
+        try {
+          await AsyncStorage.setItem(SUBJECTS_CACHE_KEY, JSON.stringify(merged));
+        } catch (err) {
+          // ignore storage failures
+        }
         if (mounted) setSubjects(merged);
       } catch {
         if (mounted) setSubjects(cachedSubjects || SUBJECTS);
@@ -47,5 +68,5 @@ export default function useSubjects() {
     return () => { mounted = false; };
   }, []);
 
-  return subjects;
+  return { subjects, loading };
 }

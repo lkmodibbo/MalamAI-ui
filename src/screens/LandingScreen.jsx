@@ -86,7 +86,7 @@ export default function LandingScreen({ navigation }) {
   const [streak, setStreak] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const { profile, loading: profileLoading, reloadProfile } = useStudentProfile();
-  const { dueCount, refreshQueue } = useSRS();
+  const { dueCount, refreshQueue, getMasteryStats, getUpcomingReviews } = useSRS();
   const { notes, refreshNotes } = useNotes();
   const { weakTopics, refreshWeakTopics } = useWeaknessTracker();
   const { examDate, daysRemaining, progressPercent } = useExamCountdown();
@@ -141,6 +141,18 @@ export default function LandingScreen({ navigation }) {
 
   const firstName = (profile?.name || 'Student').trim().split(/\s+/)[0] || 'Student';
 
+  const masteryStats = getMasteryStats ? getMasteryStats() : [];
+  const overallMasteryPercent = masteryStats.length
+    ? Math.round(masteryStats.reduce((s, a) => s + (a.masteryPercent || 0), 0) / masteryStats.length)
+    : 0;
+  const upcomingBuckets = getUpcomingReviews ? getUpcomingReviews(7) : {};
+  const upcomingCount = Object.values(upcomingBuckets).reduce((s, arr) => s + (arr?.length || 0), 0);
+  const masteryMap = useMemo(() => {
+    const map = {};
+    (masteryStats || []).forEach((m) => { map[m.subjectId] = m.masteryPercent || 0; });
+    return map;
+  }, [masteryStats]);
+
   const openSubject = (subject) => {
     navigation.navigate('Learn', { subject, topic: subject.topics?.[0] || subject.name });
   };
@@ -174,22 +186,24 @@ export default function LandingScreen({ navigation }) {
           <View style={styles.headerLeft}>
             <MenuButton />
             <View>
-              <Text style={styles.headerEyebrow}>Dashboard</Text>
               <Text style={styles.headerTitle}>Home</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.headerBell}
-            onPress={() => navigation.navigate('Notifications')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.headerBellLabel}>Alerts</Text>
-            {unreadCount > 0 ? (
-              <View style={styles.headerBellBadge}>
-                <Text style={styles.headerBellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              </View>
-            ) : null}
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity
+              style={styles.headerBell}
+              onPress={() => navigation.navigate('Notifications')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.headerBellLabel}>Alerts</Text>
+              {unreadCount > 0 ? (
+                <View style={styles.headerBellBadge}>
+                  <Text style={styles.headerBellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+            {/* Dev SRS debug button removed from student dashboard */}
+          </View>
         </View>
         <ScrollView contentContainerStyle={styles.dashboardContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.dashboardHero}>
@@ -224,6 +238,17 @@ export default function LandingScreen({ navigation }) {
             <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Progress')} activeOpacity={0.85}>
               <Text style={styles.summaryValue}>{streak}</Text>
               <Text style={styles.summaryLabel}>Streak</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.summaryGrid2}>
+            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Progress')} activeOpacity={0.85}>
+              <Text style={styles.summaryValue}>{overallMasteryPercent}%</Text>
+              <Text style={styles.summaryLabel}>Mastery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Review')} activeOpacity={0.85}>
+              <Text style={styles.summaryValue}>{upcomingCount}</Text>
+              <Text style={styles.summaryLabel}>Upcoming reviews</Text>
             </TouchableOpacity>
           </View>
 
@@ -321,7 +346,7 @@ export default function LandingScreen({ navigation }) {
               <TouchableOpacity key={subject.id} style={styles.dashboardSubjectCard} onPress={() => openSubject(subject)}>
                 <SubjectBadge name={subject.name} size="md" />
                 <Text style={styles.dashboardSubjectName}>{subject.name}</Text>
-                <Text style={styles.dashboardSubjectMeta}>{subject.topics.length} topics</Text>
+                <Text style={styles.dashboardSubjectMeta}>{subject.topics.length} topics · {masteryMap[subject.id] || 0}% mastery</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity style={[styles.dashboardSubjectCard, styles.addSubjectCard]} onPress={() => navigation.navigate('Profile')}>
@@ -668,6 +693,11 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   summaryGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  summaryGrid2: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 14,

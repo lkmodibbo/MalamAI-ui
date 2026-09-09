@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Modal, ScrollView,
-  Text, TouchableOpacity, View, StyleSheet,
+  Text, TouchableOpacity, View, StyleSheet, AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { callGrok, normalizeQuestionList, parseQuestionJson } from '../services/grok';
 import SUBJECTS from '../constants/subjects';
 import { getQuestionsFromDB, saveAiQuestions } from '../services/apiService';
 import SubjectBadge from '../components/SubjectBadge';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EXAM_SECONDS = 90 * 60;
 const QUESTION_COUNT = 20; // 20 per subject — reliable with all fallback models
@@ -45,12 +46,47 @@ export default function MockExamScreen({ route, navigation }) {
   const [error, setError] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const intervalRef = useRef(null);
+  const saveTimerRef = useRef(null);
 
-  // Load all subjects in parallel
+  const examStateKey = `inprogress_exam:${subjectIds.join('|')}`;
+
+  // Try to load in-progress exam from storage first
+  useEffect(() => {
+    let mounted = true;
+    const hydrate = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(examStateKey);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        // basic validation: ensure subjects match
+        if (!parsed || !Array.isArray(parsed.subjectIds) || parsed.subjectIds.join('|') !== subjectIds.join('|')) return;
+        if (!mounted) return;
+        setQuestionsBySubject(parsed.questionsBySubject || {});
+        setSelectedAnswers(parsed.selectedAnswers || subjectIds.reduce((acc, id) => ({ ...acc, [id]: {} }), {}));
+        setCurrentIndexes(parsed.currentIndexes || subjectIds.reduce((acc, id) => ({ ...acc, [id]: 0 }), {}));
+        setSecondsLeft(typeof parsed.secondsLeft === 'number' ? parsed.secondsLeft : EXAM_SECONDS);
+        setActiveSubjectId(parsed.activeSubjectId || subjectIds[0] || '');
+        setLoadStatus(subjectIds.reduce((acc, id) => ({ ...acc, [id]: 'done' }), {}));
+        setIsLoading(false);
+      } catch (err) {
+        // ignore hydrate errors and proceed to normal load
+      }
+    };
+    hydrate();
+    return () => { mounted = false; };
+  }, [examStateKey]);
+
+  // Load all subjects in parallel (unless hydrated from storage)
   useEffect(() => {
     let mounted = true;
     const loadAll = async () => {
-      await Promise.all(subjects.map(async (subject) => {
+      // If questions were hydrated from storage, skip remote generation for those subjects
+      const missing = subjects.filter((s) => !(questionsBySubject[s.id] && questionsBySubject[s.id].length));
+      if (!missing.length) {
+        if (mounted) setIsLoading(false);
+        return;
+      }
+      await Promise.all(missing.map(async (subject) => {
         try {
           let questions = await getQuestionsFromDB(subject.id, null, QUESTION_COUNT);
           if (questions.length < QUESTION_COUNT) {
@@ -91,6 +127,42 @@ export default function MockExamScreen({ route, navigation }) {
   useEffect(() => {
     if (secondsLeft === 0 && !isLoading) doSubmit();
   }, [secondsLeft, isLoading]);
+
+  // Persist in-progress exam state periodically
+  useEffect(() => {
+    let mounted = true;
+    const saveState = async () => {
+      try {
+        const payload = {
+          subjectIds,
+          questionsBySubject,
+          selectedAnswers,
+          currentIndexes,
+          secondsLeft,
+          activeSubjectId,
+          savedAt: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem(examStateKey, JSON.stringify(payload));
+      } catch (err) {
+        // ignore save errors
+      }
+    };
+    // debounce save after changes (2.5s)
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => { if (mounted) saveState(); }, 2500);
+
+    const onAppStateChange = (next) => {
+      if (next === 'inactive' || next === 'background') saveState();
+    };
+    AppState.addEventListener('change', onAppStateChange);
+
+    return () => {
+      mounted = false;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveState();
+      AppState.removeEventListener('change', onAppStateChange);
+    };
+  }, [questionsBySubject, selectedAnswers, currentIndexes, secondsLeft, activeSubjectId, examStateKey, subjectIds]);
 
   const currentIndex = currentIndexes[activeSubjectId] || 0;
   const activeQuestions = questionsBySubject[activeSubjectId] || [];
@@ -160,6 +232,8 @@ export default function MockExamScreen({ route, navigation }) {
       predictedScore,
       timeTaken: EXAM_SECONDS - secondsLeft,
     });
+    // clear saved in-progress exam
+    AsyncStorage.removeItem(examStateKey).catch(() => {});
   };
 
   // ── Loading screen ──

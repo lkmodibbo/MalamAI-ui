@@ -33,6 +33,7 @@ import LeaderboardScreen from '../screens/LeaderboardScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import BookmarksScreen from '../screens/BookmarksScreen';
 import ProgressScreen from '../screens/ProgressScreen';
+import DevSrsDebug from '../screens/DevSrsDebug';
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
 import AdminUsersScreen from '../screens/admin/AdminUsersScreen';
 import AdminUserDetailScreen from '../screens/admin/AdminUserDetailScreen';
@@ -417,6 +418,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
             <Stack.Screen name="Bookmarks" component={BookmarksScreen} />
             <Stack.Screen name="Progress" component={ProgressScreen} />
+            <Stack.Screen name="DevSrsDebug" component={DevSrsDebug} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>

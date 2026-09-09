@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getLeaderboard, getMyRank, getSubjectLeaderboard } from '../services/apiService';
 import { COLORS } from '../constants/colors';
 import useSubjects from '../hooks/useSubjects';
+import Skeleton from '../components/Skeleton';
 
 function rankStyle(index) {
   if (index === 0) return styles.rankFirst;
@@ -22,7 +23,7 @@ export default function LeaderboardScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [subjectId, setSubjectId] = useState('');
-  const subjects = useSubjects();
+  const { subjects, loading: subjectsLoading } = useSubjects();
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -69,7 +70,9 @@ export default function LeaderboardScreen({ navigation }) {
             >
               <Text style={[styles.filterText, !subjectId && styles.filterTextOn]}>All</Text>
             </TouchableOpacity>
-            {subjects.map((item) => (
+            {subjectsLoading ? (
+              <Skeleton style={{ marginTop: 12, width: 80, height: 28, borderRadius: 999 }} />
+            ) : subjects.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 style={[styles.filterChip, subjectId === item.id && styles.filterChipOn]}

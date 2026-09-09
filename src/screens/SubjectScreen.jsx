@@ -12,6 +12,7 @@ import MenuButton from '../components/MenuButton';
 import useSRS from '../hooks/useSRS';
 import useStudentProfile from '../hooks/useStudentProfile';
 import useSubjects from '../hooks/useSubjects';
+import Skeleton from '../components/Skeleton';
 import { COLORS } from '../constants/colors';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -23,7 +24,7 @@ export default function SubjectScreen({ navigation }) {
   const [openSubjectId, setOpenSubjectId] = useState(null);
   const { dueCount, refreshQueue } = useSRS();
   const { profile, loading } = useStudentProfile();
-  const SUBJECTS = useSubjects();
+  const { subjects: SUBJECTS, loading: subjectsLoading } = useSubjects();
 
   useFocusEffect(
     useCallback(() => { refreshQueue(); }, [refreshQueue]),
@@ -100,9 +101,11 @@ export default function SubjectScreen({ navigation }) {
           <Text style={styles.sectionLabel}>Your subjects are shown first</Text>
         )}
 
-        {filtered.length === 0 && (
+        {subjectsLoading ? (
+          <Skeleton style={{ marginTop: 24, height: 16, width: '60%' }} />
+        ) : filtered.length === 0 ? (
           <Text style={styles.emptyText}>No subjects match "{search}"</Text>
-        )}
+        ) : null}
 
         {/* Accordion list */}
         {filtered.map((subject) => {

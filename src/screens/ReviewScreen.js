@@ -11,7 +11,7 @@ function formatDays(ms) {
 }
 
 export default function ReviewScreen({ navigation }) {
-  const { dueQuestions, loading, refreshQueue, markQuestionsReviewed, queue } = useSRS();
+  const { dueQuestions, loading, refreshQueue, markQuestionsReviewed, queue, getQuestionHistory } = useSRS();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -143,6 +143,20 @@ export default function ReviewScreen({ navigation }) {
           <View>
             <Text style={styles.progressText}>Question {currentQuestionIndex + 1}/{totalQuestions}  Answered: {answeredCount}/{totalQuestions}</Text>
             <Text style={styles.questionText}>{currentQuestion.question}</Text>
+            {/* Mastery history */}
+            {(() => {
+              const hist = getQuestionHistory(currentQuestion.question);
+              if (!hist) return null;
+              const now = Date.now();
+              const nextIn = hist.nextReviewDate ? Math.max(0, hist.nextReviewDate - now) : null;
+              return (
+                <View style={styles.historyCard}>
+                  <Text style={styles.historyText}>Last reviewed: {hist.lastReviewed ? new Date(hist.lastReviewed).toLocaleDateString() : '—'}</Text>
+                  <Text style={styles.historyText}>Repetitions: {hist.repetitions} · Reviews: {hist.reviewsCount}</Text>
+                  <Text style={styles.historyText}>Ease: {hist.ef.toFixed(2)}{nextIn !== null ? ` · Next in ${formatDays(nextIn)}` : ''}</Text>
+                </View>
+              );
+            })()}
             {Object.entries(currentQuestion.options || {}).map(([key, option]) => {
               const isSelected = selectedAnswer === key;
               return (
@@ -222,6 +236,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  historyCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#efe6ff',
+  },
+  historyText: { color: '#4a3569', fontSize: 12, marginBottom: 2 },
   progressText: {
     color: '#6a3ba8',
     fontWeight: '700',

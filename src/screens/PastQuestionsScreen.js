@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Skeleton from '../components/Skeleton';
 import { COLORS } from '../constants/colors';
 import useSubjects from '../hooks/useSubjects';
 import SubjectBadge from '../components/SubjectBadge';
 
 export default function PastQuestionsScreen({ navigation }) {
-  const SUBJECTS = useSubjects();
+  const { subjects: SUBJECTS, loading: subjectsLoading } = useSubjects();
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
@@ -28,7 +29,9 @@ export default function PastQuestionsScreen({ navigation }) {
 
         <Text style={styles.sectionLabel}>Select a subject</Text>
 
-        {SUBJECTS.map((s) => (
+        {subjectsLoading ? (
+          <Skeleton style={{ marginTop: 12, height: 14, width: '40%' }} />
+        ) : SUBJECTS.map((s) => (
           <TouchableOpacity
             key={s.id}
             style={styles.subjectRow}
