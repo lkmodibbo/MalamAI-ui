@@ -27,6 +27,7 @@ import ChatScreen from '../screens/ChatScreen';
 import { isOnboardingComplete, setOnboardingComplete } from '../hooks/useStudentProfile';
 import { getMe, setUnauthorizedHandler } from '../services/apiService';
 import ErrorBoundary from '../components/ErrorBoundary';
+import RequireAdmin from '../components/RequireAdmin';
 import SidebarProvider from './SidebarProvider';
 import PastExamScreen from '../screens/PastExamScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
@@ -115,66 +116,66 @@ function MainTabs() {
 }
 
 function AdminTabs() {
-  const screenOptions = useTabScreenOptions();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [adminMenuOpen, setAdminMenuOpen] = React.useState(false);
 
   return (
-    // Render a two-column admin layout: left sidebar + right content area.
-    <View style={adminStyles.container}>
-      {sidebarOpen ? (
-        <View style={adminStyles.sidebar}>
-          <View style={adminStyles.sidebarSearchWrap}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={adminStyles.sidebarTitle}>Admin</Text>
-              <TouchableOpacity onPress={() => setSidebarOpen(false)} style={adminStyles.closeBtn}>
-                <Text style={adminStyles.closeBtnText}>✕</Text>
-              </TouchableOpacity>
+    <RequireAdmin>
+      <View style={adminStyles.container}>
+        {sidebarOpen ? (
+          <View style={adminStyles.sidebar}>
+            <View style={adminStyles.sidebarSearchWrap}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={adminStyles.sidebarTitle}>Admin</Text>
+                <TouchableOpacity onPress={() => setSidebarOpen(false)} style={adminStyles.closeBtn}>
+                  <Text style={adminStyles.closeBtnText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                style={adminStyles.sidebarSearch}
+                placeholder="Search..."
+                placeholderTextColor="#7D8E8A"
+              />
             </View>
-            <TextInput
-              style={adminStyles.sidebarSearch}
-              placeholder="Search..."
-              placeholderTextColor="#7D8E8A"
-            />
+
+            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminHome')}>
+              <Text style={adminStyles.sidebarItemText}>Overview</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUsers')}>
+              <Text style={adminStyles.sidebarItemText}>Users</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminBoard')}>
+              <Text style={adminStyles.sidebarItemText}>Leaderboard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUpload')}>
+              <Text style={adminStyles.sidebarItemText}>Upload</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminAudit')}>
+              <Text style={adminStyles.sidebarItemText}>Audit</Text>
+            </TouchableOpacity>
           </View>
+        ) : (
+          <TouchableOpacity style={adminStyles.openSidebarButton} onPress={() => setSidebarOpen(true)}>
+            <Text style={adminStyles.openSidebarButtonText}>☰</Text>
+          </TouchableOpacity>
+        )}
 
-          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminHome')}>
-            <Text style={adminStyles.sidebarItemText}>Overview</Text>
+        <View style={adminStyles.contentArea}>
+          <TouchableOpacity style={adminStyles.adminMenuButton} onPress={() => setAdminMenuOpen(true)}>
+            <Text style={adminStyles.adminMenuButtonText}>☰</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUsers')}>
-            <Text style={adminStyles.sidebarItemText}>Users</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminBoard')}>
-            <Text style={adminStyles.sidebarItemText}>Leaderboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUpload')}>
-            <Text style={adminStyles.sidebarItemText}>Upload</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminAudit')}>
-            <Text style={adminStyles.sidebarItemText}>Audit</Text>
-          </TouchableOpacity>
+          <Tab.Navigator tabBar={() => null} screenOptions={{ headerShown: false }}>
+            <Tab.Screen name="AdminHome" component={AdminDashboardScreen} />
+            <Tab.Screen name="AdminUsers" component={AdminUsersScreen} />
+            <Tab.Screen name="AdminBoard" component={AdminLeaderboardScreen} />
+            <Tab.Screen name="AdminUpload" component={AdminPastQuestionsScreen} />
+            <Tab.Screen name="AdminAudit" component={AdminAuditScreen} />
+            <Tab.Screen name="AdminContent" component={AdminContentScreen} />
+          </Tab.Navigator>
         </View>
-      ) : (
-        <TouchableOpacity style={adminStyles.openSidebarButton} onPress={() => setSidebarOpen(true)}>
-          <Text style={adminStyles.openSidebarButtonText}>☰</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={adminStyles.contentArea}>
-        <TouchableOpacity style={adminStyles.adminMenuButton} onPress={() => setAdminMenuOpen(true)}>
-          <Text style={adminStyles.adminMenuButtonText}>☰</Text>
-        </TouchableOpacity>
-        <Tab.Navigator tabBar={() => null} screenOptions={{ headerShown: false }}>
-          <Tab.Screen name="AdminHome" component={AdminDashboardScreen} />
-          <Tab.Screen name="AdminUsers" component={AdminUsersScreen} />
-          <Tab.Screen name="AdminBoard" component={AdminLeaderboardScreen} />
-          <Tab.Screen name="AdminUpload" component={AdminPastQuestionsScreen} />
-          <Tab.Screen name="AdminAudit" component={AdminAuditScreen} />
-          <Tab.Screen name="AdminContent" component={AdminContentScreen} />
-        </Tab.Navigator>
+        <AdminSidebar visible={adminMenuOpen} onClose={() => setAdminMenuOpen(false)} onNavigate={(r) => navigationRef.current?.navigate(r)} />
       </View>
-      <AdminSidebar visible={adminMenuOpen} onClose={() => setAdminMenuOpen(false)} onNavigate={(r) => navigationRef.current?.navigate(r)} />
-    </View>
+    </RequireAdmin>
   );
 }
 
@@ -303,6 +304,22 @@ const adminStyles = StyleSheet.create({
   },
 });
 
+function AdminUserDetailGate(props) {
+  return (
+    <RequireAdmin>
+      <AdminUserDetailScreen {...props} />
+    </RequireAdmin>
+  );
+}
+
+function AdminContentGate(props) {
+  return (
+    <RequireAdmin>
+      <AdminContentScreen {...props} />
+    </RequireAdmin>
+  );
+}
+
 export default function RootNavigator() {
   // null = still checking, true = logged in, false = not logged in
   const [authState, setAuthState] = useState(null);
@@ -400,8 +417,8 @@ export default function RootNavigator() {
             {/* Main app */}
             <Stack.Screen name="MainTabs" component={MainTabs} />
             <Stack.Screen name="AdminTabs" component={AdminTabs} />
-            <Stack.Screen name="AdminUserDetail" component={AdminUserDetailScreen} />
-            <Stack.Screen name="AdminContent" component={AdminContentScreen} />
+            <Stack.Screen name="AdminUserDetail" component={AdminUserDetailGate} />
+            <Stack.Screen name="AdminContent" component={AdminContentGate} />
             <Stack.Screen name="Learn" component={LearnScreen} />
             <Stack.Screen name="MockSetup" component={MockSetupScreen} />
             <Stack.Screen name="MockExam" component={MockExamScreen} />

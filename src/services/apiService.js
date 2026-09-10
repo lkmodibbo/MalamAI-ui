@@ -99,6 +99,11 @@ async function request(endpoint, options = {}) {
       await handleExpiredSession();
       throw new Error('Your session has expired. Please login again.');
     }
+    if (res.status === 403) {
+      const err = new Error(data.error || data.message || 'You do not have permission to do that.');
+      err.status = 403;
+      throw err;
+    }
     throw new Error(data.error || data.message || 'Something went wrong');
   }
 
@@ -223,7 +228,7 @@ export async function getQuestionsFromDB(subjectId, topicId, count = 5) {
       count:   String(count),
       ...(topicId && { topic: String(topicId) }),
     });
-    const data = await request(`/questions?${params}`);
+    const data = await request(`/questions?${params}`, { requireAuth: true });
     return data.questions || [];
   } catch (err) {
     console.warn('[getQuestionsFromDB] failed:', err.message);
@@ -238,12 +243,20 @@ export async function getPastQuestions(subjectId, year, count = 10) {
       count:   String(count),
       ...(year && { year: String(year) }),
     });
-    const data = await request(`/questions/past?${params}`);
+    const data = await request(`/questions/past?${params}`, { requireAuth: true });
     return data.questions || [];
   } catch (err) {
     console.warn('[getPastQuestions] failed:', err.message);
     return [];
   }
+}
+
+export async function gradeQuiz(answers) {
+  return await request('/quiz/grade', {
+    method: 'POST',
+    body: JSON.stringify({ answers }),
+    requireAuth: true,
+  });
 }
 export async function resendVerificationEmail(email) {
   return await request('/auth/resend-verification', {

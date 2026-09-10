@@ -1,10 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import AppSidebar from '../components/AppSidebar';
-import { logout } from '../services/apiService';
 import useSRS from '../hooks/useSRS';
-import { getUnreadCount } from '../services/apiService';
+import { getMe, getUnreadCount, logout } from '../services/apiService';
 
 const SidebarContext = createContext({ openSidebar: () => {} });
 
@@ -28,22 +26,21 @@ export default function SidebarProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Counts are refreshed on open rather than on every render so the menu stays
-  // current without polling in the background.
+  // Counts and role are refreshed on open from the live session, not AsyncStorage.
   const openSidebar = useCallback(async () => {
     setOpen(true);
-    try {
-      const raw = await AsyncStorage.getItem('auth_user');
-      const user = raw ? JSON.parse(raw) : null;
-      if (user?.name) setName(user.name);
-      setIsAdmin(Boolean(user?.is_admin));
-    } catch {
-      // keep whatever name we already have
-    }
     refreshQueue();
     getUnreadCount()
       .then((data) => setUnreadCount(data.count || 0))
       .catch(() => {});
+
+    try {
+      const me = await getMe();
+      if (me?.user?.name) setName(me.user.name);
+      setIsAdmin(Boolean(me?.user?.is_admin));
+    } catch {
+      setIsAdmin(false);
+    }
   }, [refreshQueue]);
 
   const closeSidebar = useCallback(() => setOpen(false), []);
@@ -51,9 +48,12 @@ export default function SidebarProvider({ children }) {
   const handleNavigate = useCallback(async (route) => {
     try {
       if (route === 'LOGOUT') {
-        // Clear session and return to the public landing page (reset the navigation stack)
         await logout();
         navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Home' }] }));
+        return;
+      }
+
+      if (route === 'AdminTabs' && !isAdmin) {
         return;
       }
 
@@ -65,7 +65,7 @@ export default function SidebarProvider({ children }) {
     } catch (err) {
       console.warn('[Sidebar] navigation error:', err.message);
     }
-  }, [navigation]);
+  }, [navigation, isAdmin]);
 
   const value = useMemo(() => ({ openSidebar, closeSidebar }), [openSidebar, closeSidebar]);
 

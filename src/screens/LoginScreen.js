@@ -20,7 +20,9 @@ const loginSchema = Yup.object({
   email: Yup.string()
     .matches(EMAIL_REGEX, 'Enter a valid email address (e.g. name@gmail.com)')
     .required('Email is required'),
-  password: Yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  // Keep login flexible so existing shorter passwords still work; new
+  // registrations and resets require 8+ characters on the server.
+  password: Yup.string().required('Password is required'),
 });
 
 const registerSchema = Yup.object({
@@ -28,7 +30,7 @@ const registerSchema = Yup.object({
   email: Yup.string()
     .matches(EMAIL_REGEX, 'Enter a valid email address (e.g. name@gmail.com)')
     .required('Email is required'),
-  password: Yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  password: Yup.string().min(8, 'At least 8 characters').required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords do not match')
     .required('Please confirm your password'),

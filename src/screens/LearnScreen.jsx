@@ -8,7 +8,7 @@ import FlashcardScreen from './FlashcardScreen';
 import { callGrok, parseQuestionJson, normalizeQuestionList, isQuotaError } from '../services/grok';
 import { getMode, getSystemPrompt } from '../hooks/useLanguageMode';
 import { COLORS } from '../constants/colors';
-import { getQuestionsFromDB, saveAiQuestions } from '../services/apiService';
+import { getQuestionsFromDB, gradeQuiz } from '../services/apiService';
 import { markTopicVisited } from '../hooks/useSetupProgress';
 import SubjectBadge from '../components/SubjectBadge';
 
@@ -204,9 +204,8 @@ export default function LearnScreen({ route, navigation }) {
         const text     = await callGrok(practicePrompt);
         const parsed   = parseQuestionJson(String(text));
         nextQuestions  = normalizeQuestionList(parsed, maxQuestions);
-        if (subject?.id && nextQuestions.length) {
-          saveAiQuestions(subject.id, null, nextQuestions).catch(() => {});
-        }
+        // AI questions stay session-local. Writing them into the shared bank is
+        // an admin action — students must not invent global content.
       }
 
     setQuestions(nextQuestions);
@@ -267,28 +266,68 @@ async function handleSubmitQuiz() {
       return;
     }
 
-    const review = questions.map((item, index) => {
-      const selected = selectedAnswers[index] || '';
-      const correct = item.answer?.trim().toUpperCase();
+    let review;
+    let finalScore;
 
-      return {
-        id: item.id || null,
-        question: item.question,
-        options: item.options,
-        answer: correct,
-        selected,
-        explanation: item.explanation,
-        isCorrect: Boolean(correct) && selected.trim().toUpperCase() === correct,
-      };
-    });
+    // Banked questions no longer ship answers — grade them on the server.
+    // AI-generated questions still include answers from the model and are graded locally.
+    const banked = questions.every((item) => item?.id);
+    if (banked) {
+      try {
+        const payload = questions.map((item, index) => ({
+          question_id: item.id,
+          selected: selectedAnswers[index] || '',
+        }));
+        const graded = await gradeQuiz(payload);
+        review = (graded.review || []).map((item) => ({
+          id: item.id,
+          question: item.question,
+          options: item.options,
+          answer: item.answer,
+          selected: item.selected,
+          explanation: item.explanation,
+          isCorrect: Boolean(item.isCorrect),
+        }));
+        finalScore = graded.score ?? review.filter((item) => item.isCorrect).length;
+      } catch (err) {
+        submittedRef.current = false;
+        Alert.alert('Grading failed', err.message || 'Could not grade this quiz. Please try again.');
+        return;
+      }
+    } else {
+      review = questions.map((item, index) => {
+        const selected = selectedAnswers[index] || '';
+        const correct = item.answer?.trim().toUpperCase();
 
-    const finalScore = review.filter((item) => item.isCorrect).length;
+        return {
+          id: item.id || null,
+          question: item.question,
+          options: item.options,
+          answer: correct,
+          selected,
+          explanation: item.explanation,
+          isCorrect: Boolean(correct) && selected.trim().toUpperCase() === correct,
+        };
+      });
+      finalScore = review.filter((item) => item.isCorrect).length;
+    }
+
     const weakTopics = review.some((item) => !item.isCorrect)
       ? [topic || subject?.name || 'Practice']
       : [];
 
+    // Use graded answers so SRS still records the correct option for banked questions.
+    const questionsForSrs = review.map((item, index) => ({
+      ...(questions[index] || {}),
+      question: item.question || questions[index]?.question,
+      options: item.options || questions[index]?.options,
+      answer: item.answer,
+      explanation: item.explanation,
+      id: item.id ?? questions[index]?.id,
+    }));
+
     try {
-      await saveMissedQuestions(questions, selectedAnswers, topic, subject?.id);
+      await saveMissedQuestions(questionsForSrs, selectedAnswers, topic, subject?.id);
     } catch (err) {
       console.warn('[saveMissedQuestions]', err);
     }
@@ -314,7 +353,6 @@ async function handleSubmitQuiz() {
       weakTopics,
       review,
       motivation: getMotivation(finalScore, maxQuestions),
-      // NEW — pass subject and topic so ScoreScreen can save to backend
       subjectId:   subject?.id   || null,
       topicName:   topic         || subject?.name || null,
       timeTaken:   QUIZ_TIME_SECONDS - (timeRemaining || 0),

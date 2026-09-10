@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getMe, hasAuthToken } from '../services/apiService';
 
 /**
  * Returns a `requireAuth` wrapper.
@@ -7,18 +7,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  *   const requireAuth = useRequireAuth(navigation);
  *   requireAuth(() => navigation.navigate('Learn', { ... }));
  *
- * If the user is logged in the callback runs immediately.
- * If not, they are sent to the Login screen.
+ * Confirms a live session with /auth/me when possible so a stale token in
+ * storage cannot unlock student features.
  */
 export default function useRequireAuth(navigation) {
   return useCallback(async (action) => {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (token) {
-        action();
-      } else {
+      const hasToken = await hasAuthToken();
+      if (!hasToken) {
         navigation.navigate('Login');
+        return;
       }
+
+      try {
+        await getMe();
+      } catch {
+        navigation.navigate('Login');
+        return;
+      }
+
+      action();
     } catch {
       navigation.navigate('Login');
     }
