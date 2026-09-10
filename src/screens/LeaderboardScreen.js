@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { getLeaderboard, getMyRank, getSubjectLeaderboard } from '../services/apiService';
 import { COLORS } from '../constants/colors';
-import useSubjects from '../hooks/useSubjects';
+import useSelectedSubjects from '../hooks/useSelectedSubjects';
 import Skeleton from '../components/Skeleton';
 
 function rankStyle(index) {
@@ -23,7 +23,7 @@ export default function LeaderboardScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [subjectId, setSubjectId] = useState('');
-  const { subjects, loading: subjectsLoading } = useSubjects();
+  const { subjects, loading: subjectsLoading } = useSelectedSubjects();
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);

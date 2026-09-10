@@ -229,12 +229,12 @@ export default function AppSidebar({
 
             {isAdmin ? (
               <TouchableOpacity
-                style={[styles.subItem, { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border }]}
+                style={styles.adminEntry}
                 onPress={() => { onClose?.(); onNavigate?.('AdminTabs'); }}
                 activeOpacity={0.8}
               >
-                <Text style={styles.subItemLabel}>Open admin console</Text>
-                <Text style={styles.itemArrow}>→</Text>
+                <Text style={styles.adminEntryLabel}>Open admin console</Text>
+                <Text style={styles.adminEntryArrow}>→</Text>
               </TouchableOpacity>
             ) : null}
 
@@ -359,6 +359,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textPrimary,
+  },
+  adminEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginHorizontal: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.adminHero,
+  },
+  adminEntryLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.gold,
+  },
+  adminEntryArrow: {
+    fontSize: 15,
+    color: COLORS.gold,
   },
   item: {
     flexDirection: 'row',

@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { getAdminDashboard, logout, sendAdminAnnouncement } from '../../services/apiService';
 import { adminStyles as styles } from './adminStyles';
-import AdminSidebar from '../../components/AdminSidebar';
 
 function resetToPublicHome(navigation) {
   let current = navigation;
@@ -23,7 +22,6 @@ function resetToPublicHome(navigation) {
 }
 
 export default function AdminDashboardScreen({ navigation }) {
-  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,9 +65,7 @@ export default function AdminDashboardScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.adminOpenBtn} onPress={() => setAdminMenuOpen(true)}>
-          <Text style={styles.adminOpenBtnText}>☰</Text>
-        </TouchableOpacity>
+        <View style={styles.headerSide} />
         <View>
           <Text style={styles.headerEyebrow}>Admin</Text>
           <Text style={styles.headerTitle}>Overview</Text>
@@ -88,9 +84,9 @@ export default function AdminDashboardScreen({ navigation }) {
 
         {stats ? (
           <View style={styles.statGrid}>
-            <View style={styles.statTile}>
-              <Text style={styles.statValue}>{stats.users?.total || 0}</Text>
-              <Text style={styles.statLabel}>Registered users</Text>
+            <View style={[styles.statTile, styles.statTileFeatured]}>
+              <Text style={[styles.statValue, styles.statValueOnDark]}>{stats.users?.total || 0}</Text>
+              <Text style={[styles.statLabel, styles.statLabelOnDark]}>Registered users</Text>
             </View>
             <View style={styles.statTile}>
               <Text style={styles.statValue}>{stats.users?.verified || 0}</Text>
@@ -167,8 +163,6 @@ export default function AdminDashboardScreen({ navigation }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      <AdminSidebar visible={adminMenuOpen} onClose={() => setAdminMenuOpen(false)} onNavigate={(r) => { setAdminMenuOpen(false); navigation.navigate(r); }} />
 
       <Modal visible={showLogout} transparent animationType="fade" onRequestClose={() => setShowLogout(false)}>
         <View style={styles.logoutModalOverlay}>

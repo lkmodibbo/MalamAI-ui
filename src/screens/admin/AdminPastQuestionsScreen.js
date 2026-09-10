@@ -291,8 +291,8 @@ export default function AdminPastQuestionsScreen({ navigation }) {
                 placeholderTextColor="#7D8E8A"
               />
               {Platform.OS === 'web' ? (
-                <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: '#0F8A72' }]} onPress={pickJsonFile}>
-                  <Text style={styles.primaryBtnText}>Choose JSON file</Text>
+                <TouchableOpacity style={[styles.primaryBtn, styles.secondaryBtn]} onPress={pickJsonFile}>
+                  <Text style={styles.secondaryBtnText}>Choose JSON file</Text>
                 </TouchableOpacity>
               ) : null}
               <TouchableOpacity style={styles.primaryBtn} onPress={handleBulk} disabled={saving}>

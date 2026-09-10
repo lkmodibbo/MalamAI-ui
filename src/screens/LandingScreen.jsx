@@ -123,8 +123,7 @@ export default function LandingScreen({ navigation }) {
 
   const selectedSubjects = useMemo(() => {
     const selectedIds = profile?.selectedSubjects || [];
-    const chosen = SUBJECTS.filter((subject) => selectedIds.includes(subject.id));
-    return chosen.length > 0 ? chosen : SUBJECTS.filter((subject) => subject.id === 'english');
+    return SUBJECTS.filter((subject) => selectedIds.includes(subject.id));
   }, [profile?.selectedSubjects]);
 
   const recentNotes = useMemo(() => {
@@ -186,7 +185,8 @@ export default function LandingScreen({ navigation }) {
           <View style={styles.headerLeft}>
             <MenuButton />
             <View>
-              <Text style={styles.headerTitle}>Home</Text>
+              <Text style={styles.headerEyebrow}>Welcome</Text>
+              <Text style={styles.headerTitle} numberOfLines={1}>{firstName}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -222,35 +222,35 @@ export default function LandingScreen({ navigation }) {
             </View>
           </View>
 
-          <View style={styles.summaryGrid}>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Subjects')} activeOpacity={0.85}>
+          <View style={styles.summaryStrip}>
+            <TouchableOpacity style={styles.summaryCell} onPress={() => navigation.navigate('Subjects')} activeOpacity={0.85}>
               <Text style={styles.summaryValue}>{selectedSubjects.length}</Text>
               <Text style={styles.summaryLabel}>Subjects</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Review')} activeOpacity={0.85}>
+            <TouchableOpacity style={styles.summaryCell} onPress={() => navigation.navigate('Review')} activeOpacity={0.85}>
               <Text style={styles.summaryValue}>{dueCount}</Text>
               <Text style={styles.summaryLabel}>Reviews</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Notes')} activeOpacity={0.85}>
+            <TouchableOpacity style={styles.summaryCell} onPress={() => navigation.navigate('Notes')} activeOpacity={0.85}>
               <Text style={styles.summaryValue}>{totalNotes}</Text>
               <Text style={styles.summaryLabel}>Notes</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Progress')} activeOpacity={0.85}>
-              <Text style={styles.summaryValue}>{streak}</Text>
+            <TouchableOpacity style={[styles.summaryCell, styles.summaryCellAccent]} onPress={() => navigation.navigate('Progress')} activeOpacity={0.85}>
+              <Text style={[styles.summaryValue, styles.summaryValueGold]}>{streak}</Text>
               <Text style={styles.summaryLabel}>Streak</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.summaryGrid2}>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Progress')} activeOpacity={0.85}>
-              <Text style={styles.summaryValue}>{overallMasteryPercent}%</Text>
-              <Text style={styles.summaryLabel}>Mastery</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.summaryTile} onPress={() => navigation.navigate('Review')} activeOpacity={0.85}>
-              <Text style={styles.summaryValue}>{upcomingCount}</Text>
-              <Text style={styles.summaryLabel}>Upcoming reviews</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.masteryRow}
+            onPress={() => navigation.navigate('Progress')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.masteryText}>
+              Mastery {overallMasteryPercent}% · {upcomingCount} upcoming reviews
+            </Text>
+            <Text style={styles.masteryArrow}>→</Text>
+          </TouchableOpacity>
 
           {/* ── Setup Progress Card ── */}
           {!setupDone && (
@@ -601,9 +601,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#DCE6E2',
+    borderBottomColor: COLORS.headerBorder,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -692,30 +692,49 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     maxWidth: 280,
   },
-  summaryGrid: {
+  summaryStrip: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-  },
-  summaryGrid2: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-  },
-  summaryTile: {
-    flex: 1,
-    minHeight: 68,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.surfaceWhite,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 6,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  summaryCell: {
+    flex: 1,
+    minHeight: 72,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
   },
-  summaryValue: { color: '#14283D', fontSize: 18, fontWeight: '900', marginBottom: 2 },
-  summaryLabel: { color: '#5A6B68', fontSize: 10, fontWeight: '700' },
+  summaryCellAccent: {
+    borderRightWidth: 0,
+    backgroundColor: COLORS.surface,
+  },
+  summaryValue: { color: COLORS.primary, fontSize: 18, fontWeight: '900', marginBottom: 2 },
+  summaryValueGold: { color: COLORS.gold },
+  summaryLabel: { color: COLORS.textMuted, fontSize: 10, fontWeight: '700' },
+  masteryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 16,
+  },
+  masteryText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  masteryArrow: {
+    color: COLORS.link,
+    fontSize: 16,
+    fontWeight: '700',
+  },
   dashboardSectionTitle: {
     color: '#14283D',
     fontSize: 17,
@@ -755,7 +774,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionArrow: {
-    color: COLORS.accent,
+    color: COLORS.link,
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 10,
@@ -769,39 +788,39 @@ const styles = StyleSheet.create({
   dashboardSubjectCard: {
     flexBasis: '48%',
     minHeight: 120,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 14,
     justifyContent: 'space-between',
     marginBottom: 12,
   },
   addSubjectCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderStyle: 'dashed',
   },
   dashboardSubjectPlus: {
-    color: COLORS.accent,
+    color: COLORS.primary,
     fontSize: 28,
     fontWeight: '700',
     lineHeight: 32,
   },
   dashboardSubjectName: {
-    color: '#14283D',
+    color: COLORS.primary,
     fontSize: 14,
     fontWeight: '900',
     lineHeight: 19,
   },
   dashboardSubjectMeta: {
-    color: '#5A6B68',
+    color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '700',
   },
   readingSummary: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
@@ -812,7 +831,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  viewLink: { color: '#0F8A72', fontSize: 12, fontWeight: '800' },
+  viewLink: { color: COLORS.link, fontSize: 12, fontWeight: '800' },
   noteRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -852,7 +871,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   imageBandKicker: {
-    color: COLORS.gold,
+    color: COLORS.textOnDark,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
@@ -895,7 +914,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   heroBtn: {
-    backgroundColor: '#0F8A72',
+    backgroundColor: COLORS.accent,
     paddingVertical: 15,
     paddingHorizontal: 32,
     borderRadius: 14,
@@ -903,9 +922,9 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  heroBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 16 },
+  heroBtnText: { color: COLORS.textWhite, fontWeight: '800', fontSize: 16 },
   heroSecondaryBtn: { paddingVertical: 6 },
-  heroSecondaryText: { color: '#0F8A72', fontWeight: '600', fontSize: 13 },
+  heroSecondaryText: { color: COLORS.link, fontWeight: '600', fontSize: 13 },
 
   illustrationWrap: {
     width: '100%',
@@ -917,7 +936,7 @@ const styles = StyleSheet.create({
   // Stats
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#14283D',
+    backgroundColor: COLORS.primary,
     borderRadius: 16,
     paddingVertical: 18,
     marginBottom: 28,
@@ -948,7 +967,7 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   storyKicker: {
-    color: COLORS.gold,
+    color: COLORS.textOnDark,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
@@ -1017,14 +1036,14 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     width: '48.2%',
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.background,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
   },
-  featureTitle: { fontSize: 13, fontWeight: '800', color: '#14283D', marginBottom: 4 },
-  featureBody: { fontSize: 12, color: '#5A6B68', lineHeight: 17 },
+  featureTitle: { fontSize: 13, fontWeight: '800', color: COLORS.primary, marginBottom: 4 },
+  featureBody: { fontSize: 12, color: COLORS.textMuted, lineHeight: 17 },
 
   promoBtn: {
     backgroundColor: COLORS.accent,
@@ -1046,19 +1065,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.background,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
   },
   subjectChipMore: {
-    backgroundColor: '#14283D',
-    borderColor: '#14283D',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
-  subjectName: { fontSize: 12, fontWeight: '700', color: '#14283D' },
-  subjectMoreText: { fontSize: 12, fontWeight: '700', color: '#ffffff' },
+  subjectName: { fontSize: 12, fontWeight: '700', color: COLORS.primary },
+  subjectMoreText: { fontSize: 12, fontWeight: '700', color: COLORS.textWhite },
 
   // Steps
   stepsCol: { gap: 12, marginBottom: 28 },
@@ -1066,36 +1085,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 14,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.background,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
   },
   stepBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#14283D',
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
-  stepNum: { color: '#ffffff', fontWeight: '900', fontSize: 14 },
+  stepNum: { color: COLORS.textWhite, fontWeight: '900', fontSize: 14 },
   stepText: { flex: 1 },
-  stepTitle: { fontSize: 14, fontWeight: '800', color: '#14283D', marginBottom: 3 },
-  stepBody: { fontSize: 12, color: '#5A6B68', lineHeight: 18 },
+  stepTitle: { fontSize: 14, fontWeight: '800', color: COLORS.primary, marginBottom: 3 },
+  stepBody: { fontSize: 12, color: COLORS.textMuted, lineHeight: 18 },
 
   // Quote
   quoteCard: {
-    backgroundColor: '#14283D',
+    backgroundColor: COLORS.primary,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     marginBottom: 16,
   },
   quoteText: {
-    color: '#ffffff',
+    color: COLORS.textWhite,
     fontSize: 16,
     fontWeight: '800',
     fontStyle: 'italic',
@@ -1106,21 +1125,21 @@ const styles = StyleSheet.create({
 
   // CTA
   ctaBtn: {
-    backgroundColor: '#0F8A72',
+    backgroundColor: COLORS.accent,
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
   },
-  ctaBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 16 },
+  ctaBtnText: { color: COLORS.textWhite, fontWeight: '800', fontSize: 16 },
 
   // Setup progress card
   setupCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#D2DDD7',
+    borderColor: COLORS.border,
   },
   setupHeader: {
     flexDirection: 'row',
@@ -1131,11 +1150,11 @@ const styles = StyleSheet.create({
   setupTitle: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#14283D',
+    color: COLORS.primary,
   },
   setupBadge: {
-    backgroundColor: '#14283D',
-    color: '#ffffff',
+    backgroundColor: COLORS.primary,
+    color: COLORS.textWhite,
     fontSize: 12,
     fontWeight: '800',
     paddingHorizontal: 10,

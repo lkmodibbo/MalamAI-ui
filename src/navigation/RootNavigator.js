@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -116,54 +116,21 @@ function MainTabs() {
 }
 
 function AdminTabs() {
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const [adminMenuOpen, setAdminMenuOpen] = React.useState(false);
+  const insets = useSafeAreaInsets();
+  // Closed until the admin opens it — never leave the menu open after login.
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [activeRoute, setActiveRoute] = React.useState('AdminHome');
+
+  const goAdmin = (route) => {
+    setActiveRoute(route);
+    setMenuOpen(false);
+    navigationRef.current?.navigate(route);
+  };
 
   return (
     <RequireAdmin>
-      <View style={adminStyles.container}>
-        {sidebarOpen ? (
-          <View style={adminStyles.sidebar}>
-            <View style={adminStyles.sidebarSearchWrap}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={adminStyles.sidebarTitle}>Admin</Text>
-                <TouchableOpacity onPress={() => setSidebarOpen(false)} style={adminStyles.closeBtn}>
-                  <Text style={adminStyles.closeBtnText}>✕</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                style={adminStyles.sidebarSearch}
-                placeholder="Search..."
-                placeholderTextColor="#7D8E8A"
-              />
-            </View>
-
-            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminHome')}>
-              <Text style={adminStyles.sidebarItemText}>Overview</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUsers')}>
-              <Text style={adminStyles.sidebarItemText}>Users</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminBoard')}>
-              <Text style={adminStyles.sidebarItemText}>Leaderboard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminUpload')}>
-              <Text style={adminStyles.sidebarItemText}>Upload</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={adminStyles.sidebarItem} onPress={() => navigationRef.current?.navigate('AdminAudit')}>
-              <Text style={adminStyles.sidebarItemText}>Audit</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity style={adminStyles.openSidebarButton} onPress={() => setSidebarOpen(true)}>
-            <Text style={adminStyles.openSidebarButtonText}>☰</Text>
-          </TouchableOpacity>
-        )}
-
-        <View style={adminStyles.contentArea}>
-          <TouchableOpacity style={adminStyles.adminMenuButton} onPress={() => setAdminMenuOpen(true)}>
-            <Text style={adminStyles.adminMenuButtonText}>☰</Text>
-          </TouchableOpacity>
+      <View style={adminShell.container}>
+        <View style={adminShell.contentArea}>
           <Tab.Navigator tabBar={() => null} screenOptions={{ headerShown: false }}>
             <Tab.Screen name="AdminHome" component={AdminDashboardScreen} />
             <Tab.Screen name="AdminUsers" component={AdminUsersScreen} />
@@ -172,8 +139,25 @@ function AdminTabs() {
             <Tab.Screen name="AdminAudit" component={AdminAuditScreen} />
             <Tab.Screen name="AdminContent" component={AdminContentScreen} />
           </Tab.Navigator>
+          {/* Rendered after the tabs so it stays above screen headers. */}
+          <TouchableOpacity
+            style={[
+              adminShell.openSidebarButton,
+              { bottom: Math.max(insets.bottom, 12) + 12 },
+            ]}
+            onPress={() => setMenuOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Open admin menu"
+          >
+            <Text style={adminShell.openSidebarButtonText}>☰</Text>
+          </TouchableOpacity>
         </View>
-        <AdminSidebar visible={adminMenuOpen} onClose={() => setAdminMenuOpen(false)} onNavigate={(r) => navigationRef.current?.navigate(r)} />
+        <AdminSidebar
+          visible={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          activeRoute={activeRoute}
+          onNavigate={goAdmin}
+        />
       </View>
     </RequireAdmin>
   );
@@ -202,102 +186,30 @@ const styles = StyleSheet.create({
   },
 });
 
-const adminStyles = StyleSheet.create({
+const adminShell = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
     backgroundColor: COLORS.background,
-  },
-  sidebar: {
-    width: 220,
-    backgroundColor: '#fff',
-    borderRightWidth: 1,
-    borderRightColor: COLORS.border,
-    paddingTop: 16,
-    paddingHorizontal: 12,
-  },
-  sidebarSearchWrap: {
-    marginBottom: 12,
-  },
-  sidebarTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  sidebarSearch: {
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 10,
-    color: COLORS.primary,
-    backgroundColor: '#f8faf9',
-  },
-  closeBtn: {
-    padding: 6,
-    borderRadius: 6,
-    backgroundColor: 'transparent',
-  },
-  closeBtnText: {
-    fontSize: 16,
-    color: COLORS.navInactive,
-  },
-  sidebarCollapsed: {
-    width: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  collapseToggle: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-  },
-  collapseToggleText: {
-    fontSize: 20,
-    color: COLORS.primary,
-  },
-  adminMenuButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-  },
-  adminMenuButtonText: {
-    fontSize: 18,
-    color: COLORS.primary,
   },
   openSidebarButton: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+    right: 16,
+    zIndex: 30,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.adminHero,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 6,
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   openSidebarButtonText: {
     fontSize: 18,
-    color: COLORS.primary,
-  },
-  sidebarItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-  },
-  sidebarItemText: {
-    fontSize: 14,
-    color: COLORS.primary,
+    color: COLORS.gold,
   },
   contentArea: {
     flex: 1,

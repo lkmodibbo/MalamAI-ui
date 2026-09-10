@@ -10,8 +10,7 @@ import HomeReviewCard from '../components/HomeReviewCard';
 import SubjectBadge from '../components/SubjectBadge';
 import MenuButton from '../components/MenuButton';
 import useSRS from '../hooks/useSRS';
-import useStudentProfile from '../hooks/useStudentProfile';
-import useSubjects from '../hooks/useSubjects';
+import useSelectedSubjects from '../hooks/useSelectedSubjects';
 import Skeleton from '../components/Skeleton';
 import { COLORS } from '../constants/colors';
 
@@ -23,30 +22,20 @@ export default function SubjectScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [openSubjectId, setOpenSubjectId] = useState(null);
   const { dueCount, refreshQueue } = useSRS();
-  const { profile, loading } = useStudentProfile();
-  const { subjects: SUBJECTS, loading: subjectsLoading } = useSubjects();
+  const { subjects, selectedIds, loading } = useSelectedSubjects();
 
   useFocusEffect(
     useCallback(() => { refreshQueue(); }, [refreshQueue]),
   );
 
-  const selectedSubjectIds = profile?.selectedSubjects || [];
-
-  // All subjects — show selected first, then the rest
-  const orderedSubjects = useMemo(() => {
-    const selected = SUBJECTS.filter((s) => selectedSubjectIds.includes(s.id));
-    const rest = SUBJECTS.filter((s) => !selectedSubjectIds.includes(s.id));
-    return [...selected, ...rest];
-  }, [selectedSubjectIds, SUBJECTS]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return orderedSubjects;
-    return orderedSubjects.filter((s) =>
+    if (!q) return subjects;
+    return subjects.filter((s) =>
       s.name.toLowerCase().includes(q) ||
       s.topics.some((t) => t.toLowerCase().includes(q))
     );
-  }, [search, orderedSubjects]);
+  }, [search, subjects]);
 
   const toggleSubject = (id) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -96,37 +85,46 @@ export default function SubjectScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Section label */}
-        {!loading && selectedSubjectIds.length > 0 && !search && (
-          <Text style={styles.sectionLabel}>Your subjects are shown first</Text>
-        )}
+        {!loading && selectedIds.length > 0 && !search ? (
+          <Text style={styles.sectionLabel}>Your JAMB subjects</Text>
+        ) : null}
 
-        {subjectsLoading ? (
+        {loading ? (
           <Skeleton style={{ marginTop: 24, height: 16, width: '60%' }} />
+        ) : selectedIds.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No subjects selected</Text>
+            <Text style={styles.emptyBody}>
+              Pick the subjects you are sitting for JAMB in Profile. Only those will show here.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyBtn}
+              onPress={() => navigation.navigate('Profile')}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.emptyBtnText}>Choose subjects</Text>
+            </TouchableOpacity>
+          </View>
         ) : filtered.length === 0 ? (
           <Text style={styles.emptyText}>No subjects match "{search}"</Text>
         ) : null}
 
-        {/* Accordion list */}
+        {/* Accordion list — only subjects the student selected */}
         {filtered.map((subject) => {
           const isOpen = openSubjectId === subject.id;
-          const isSelected = selectedSubjectIds.includes(subject.id);
 
           return (
-            <View key={subject.id} style={[styles.accordion, isSelected && styles.accordionSelected]}>
-              {/* Subject header row */}
+            <View key={subject.id} style={[styles.accordion, styles.accordionSelected]}>
               <TouchableOpacity
                 style={styles.accordionHeader}
                 onPress={() => toggleSubject(subject.id)}
                 activeOpacity={0.8}
               >
                 <View style={styles.accordionLeft}>
-                  <SubjectBadge name={subject.name} size="md" tone={isSelected ? 'dark' : 'light'} />
+                  <SubjectBadge name={subject.name} size="md" tone="dark" />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.subjectName}>{subject.name}</Text>
-                    <Text style={styles.topicCount}>
-                      {subject.topics.length} topics{isSelected ? ' · My subject' : ''}
-                    </Text>
+                    <Text style={styles.topicCount}>{subject.topics.length} topics</Text>
                   </View>
                 </View>
                 <View style={styles.accordionRight}>
@@ -166,6 +164,16 @@ export default function SubjectScreen({ navigation }) {
           );
         })}
 
+        {selectedIds.length > 0 ? (
+          <TouchableOpacity
+            style={styles.editSubjectsBtn}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.editSubjectsText}>Edit subjects in Profile →</Text>
+          </TouchableOpacity>
+        ) : null}
+
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
@@ -184,9 +192,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#DCE6E2',
+    borderBottomColor: COLORS.headerBorder,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -217,7 +225,7 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -269,8 +277,50 @@ const styles = StyleSheet.create({
     marginTop: 40,
     fontSize: 14,
   },
+  emptyCard: {
+    backgroundColor: COLORS.surfaceWhite,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  emptyBody: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 16,
+  },
+  emptyBtn: {
+    backgroundColor: COLORS.accent,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  emptyBtnText: {
+    color: COLORS.textWhite,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  editSubjectsBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginTop: 4,
+  },
+  editSubjectsText: {
+    color: COLORS.link,
+    fontWeight: '800',
+    fontSize: 13,
+  },
   accordion: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surfaceWhite,
     borderRadius: 16,
     marginBottom: 10,
     borderWidth: 1,
@@ -323,7 +373,7 @@ const styles = StyleSheet.create({
   topicRowGeneral: {
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: COLORS.background,
   },
   topicRowGeneralText: {
     color: COLORS.primary,
