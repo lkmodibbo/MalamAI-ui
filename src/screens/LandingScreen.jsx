@@ -23,26 +23,33 @@ import { COLORS } from '../constants/colors';
 
 const FEATURES = [
   {
+    mark: '01',
     title: 'AI-Powered Tutor',
     body: 'Ask any JAMB question and get a clear, step-by-step explanation — anytime, anywhere.',
+    featured: true,
   },
   {
+    mark: '02',
     title: 'Practice Quizzes',
     body: 'Sharpen your skills with AI-generated questions across all 16 UTME subjects.',
   },
   {
+    mark: '03',
     title: 'Full Mock Exams',
     body: 'Simulate the real JAMB experience — 80 questions, 90 minutes, instant score breakdown.',
   },
   {
+    mark: '04',
     title: 'Flashcards',
     body: 'Master key concepts fast with auto-generated flashcards for every topic.',
   },
   {
+    mark: '05',
     title: 'Track Your Progress',
     body: 'See your weak areas, monitor improvement, and focus your study where it matters most.',
   },
   {
+    mark: '06',
     title: 'Personal Notes',
     body: 'Save AI explanations as notes and review them anytime — even offline.',
   },
@@ -208,13 +215,13 @@ export default function LandingScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.dashboardContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.dashboardHero}>
             <Image
-              source={require('../../assets/Images/hero-study.jpg')}
+              source={require('../../assets/Images/student-home-hero.jpg')}
               style={styles.dashboardHeroImage}
               resizeMode="cover"
             />
             <View style={styles.heroOverlay} />
             <View style={styles.dashboardHeroContent}>
-              <Text style={styles.welcomeLabel}>Welcome back</Text>
+              <Text style={styles.welcomeLabel}>Study mode</Text>
               <Text style={styles.dashboardTitle}>{firstName}</Text>
               <Text style={styles.dashboardSub}>
                 Keep your JAMB prep moving today with focused practice, review, and notes.
@@ -478,15 +485,32 @@ export default function LandingScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Features — 3 columns × 2 rows */}
-        <Text style={styles.sectionTitle}>Everything you need to score high</Text>
-        <View style={styles.featuresGrid}>
-          {FEATURES.map((f) => (
-            <View key={f.title} style={styles.featureCard}>
-              <Text style={styles.featureTitle}>{f.title}</Text>
-              <Text style={styles.featureBody}>{f.body}</Text>
+        <View style={styles.featuresSection}>
+          <Text style={styles.sectionTitle}>Everything you need to score high</Text>
+          <Text style={styles.featuresLead}>
+            One tutor, timed practice, and a clear path from weak topics to exam-ready.
+          </Text>
+
+          {FEATURES.filter((f) => f.featured).map((f) => (
+            <View key={f.title} style={styles.featureFeatured}>
+              <View style={styles.featureFeaturedAccent} />
+              <View style={styles.featureFeaturedInner}>
+                <Text style={styles.featureMark}>{f.mark}</Text>
+                <Text style={styles.featureFeaturedTitle}>{f.title}</Text>
+                <Text style={styles.featureFeaturedBody}>{f.body}</Text>
+              </View>
             </View>
           ))}
+
+          <View style={styles.featuresGrid}>
+            {FEATURES.filter((f) => !f.featured).map((f) => (
+              <View key={f.title} style={styles.featureCard}>
+                <Text style={styles.featureMark}>{f.mark}</Text>
+                <Text style={styles.featureTitle}>{f.title}</Text>
+                <Text style={styles.featureBody}>{f.body}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={styles.storyCard}>
@@ -1027,23 +1051,82 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  // Features grid — 3 columns
+  featuresSection: {
+    marginBottom: 28,
+  },
+  featuresLead: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: COLORS.textMuted,
+    marginTop: -6,
+    marginBottom: 16,
+    maxWidth: 340,
+  },
+  featureFeatured: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.primary,
+    borderRadius: 18,
+    overflow: 'hidden',
+    marginBottom: 10,
+    minHeight: 132,
+  },
+  featureFeaturedAccent: {
+    width: 5,
+    backgroundColor: COLORS.accent,
+  },
+  featureFeaturedInner: {
+    flex: 1,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+  featureFeaturedTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.textWhite,
+    marginBottom: 6,
+  },
+  featureFeaturedBody: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: COLORS.textOnDark,
+    maxWidth: 360,
+  },
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 24,
+    gap: 10,
   },
   featureCard: {
     width: '48.2%',
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.surfaceWhite,
     borderRadius: 16,
-    padding: 14,
+    paddingTop: 14,
+    paddingBottom: 16,
+    paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
+    borderTopWidth: 3,
+    borderTopColor: COLORS.accent,
   },
-  featureTitle: { fontSize: 13, fontWeight: '800', color: COLORS.primary, marginBottom: 4 },
-  featureBody: { fontSize: 12, color: COLORS.textMuted, lineHeight: 17 },
+  featureMark: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.gold,
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 6,
+  },
+  featureBody: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    lineHeight: 17,
+  },
 
   promoBtn: {
     backgroundColor: COLORS.accent,

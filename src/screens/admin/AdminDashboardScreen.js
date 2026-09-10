@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, TextInput,
+  View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, TextInput, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { getAdminDashboard, logout, sendAdminAnnouncement } from '../../services/apiService';
 import { adminStyles as styles } from './adminStyles';
+import { COLORS } from '../../constants/colors';
 
 function resetToPublicHome(navigation) {
   let current = navigation;
@@ -79,7 +80,23 @@ export default function AdminDashboardScreen({ navigation }) {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} />}
       >
-        {loading ? <ActivityIndicator color="#14283D" style={{ marginTop: 24 }} /> : null}
+        <View style={styles.consoleHero}>
+          <Image
+            source={require('../../../assets/Images/admin-ops-hero.jpg')}
+            style={styles.consoleHeroImage}
+            resizeMode="cover"
+          />
+          <View style={styles.consoleHeroScrim} />
+          <View style={styles.consoleHeroContent}>
+            <Text style={styles.consoleHeroKicker}>Ops console</Text>
+            <Text style={styles.consoleHeroTitle}>Content & user control</Text>
+            <Text style={styles.consoleHeroBody}>
+              Upload questions, review accounts, and keep the bank healthy — this is not the student study home.
+            </Text>
+          </View>
+        </View>
+
+        {loading ? <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} /> : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {stats ? (
@@ -109,7 +126,7 @@ export default function AdminDashboardScreen({ navigation }) {
           <TextInput
             style={[styles.input, { marginTop: 10 }]}
             placeholder="Title"
-            placeholderTextColor="#7D8E8A"
+            placeholderTextColor={COLORS.textLight}
             value={announceTitle}
             onChangeText={setAnnounceTitle}
           />
@@ -117,7 +134,7 @@ export default function AdminDashboardScreen({ navigation }) {
             style={[styles.input, styles.textarea, { marginTop: 8 }]}
             multiline
             placeholder="Message"
-            placeholderTextColor="#7D8E8A"
+            placeholderTextColor={COLORS.textLight}
             value={announceBody}
             onChangeText={setAnnounceBody}
           />
@@ -140,7 +157,7 @@ export default function AdminDashboardScreen({ navigation }) {
               }
             }}
           >
-            {sending ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.primaryBtnText}>Send to all students</Text>}
+            {sending ? <ActivityIndicator color={COLORS.textWhite} /> : <Text style={styles.primaryBtnText}>Send to all students</Text>}
           </TouchableOpacity>
         </View>
 
@@ -173,7 +190,7 @@ export default function AdminDashboardScreen({ navigation }) {
                 <Text style={styles.logoutModalBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.logoutModalBtn, styles.logoutModalConfirm]} onPress={confirmLogout}>
-                <Text style={[styles.logoutModalBtnText, { color: '#fff' }]}>Yes, log out</Text>
+                <Text style={[styles.logoutModalBtnText, { color: COLORS.textWhite }]}>Yes, log out</Text>
               </TouchableOpacity>
             </View>
           </View>

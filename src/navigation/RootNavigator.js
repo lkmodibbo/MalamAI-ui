@@ -300,14 +300,17 @@ export default function RootNavigator() {
   }
 
   // Determine starting screen:
-  // - not logged in → Login
+  // - not logged in → public Home
+  // - logged in admin → AdminTabs (ops console, not student study home)
   // - logged in, onboarding not done → Onboarding
-  // - logged in, onboarding done → MainTabs (admin users see student UI by default)
+  // - logged in student → MainTabs
   const initialRoute = !authState
     ? 'Home'
-    : showOnboarding
-      ? 'Onboarding'
-      : 'MainTabs';
+    : isAdmin
+      ? 'AdminTabs'
+      : showOnboarding
+        ? 'Onboarding'
+        : 'MainTabs';
 
   return (
     <ErrorBoundary>

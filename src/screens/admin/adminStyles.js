@@ -5,10 +5,10 @@ export const YEARS = Array.from({ length: 17 }, (_, i) => 2026 - i);
 
 /**
  * Admin chrome is intentionally different from the student study UI:
- * navy primary actions, gold accents, light paper content canvas.
+ * dark ops header, charcoal/gold hero, navy actions — not warm paper + study photos.
  */
 export const adminStyles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.background },
+  root: { flex: 1, backgroundColor: '#E8EEF0' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -16,16 +16,16 @@ export const adminStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 12,
-    backgroundColor: COLORS.surfaceWhite,
+    backgroundColor: COLORS.adminHero,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.headerBorder,
+    borderBottomColor: 'rgba(196, 163, 90, 0.35)',
   },
   adminOpenBtn: {
     marginRight: 12,
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: COLORS.adminHero,
+    backgroundColor: 'rgba(196, 163, 90, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -42,21 +42,21 @@ export const adminStyles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   headerTitle: {
-    color: COLORS.primary,
+    color: COLORS.textWhite,
     fontWeight: '900',
     fontSize: 24,
     marginTop: 2,
   },
   headerAction: { color: COLORS.gold, fontWeight: '800', fontSize: 13 },
   logoutPill: {
-    backgroundColor: COLORS.wrongBg,
+    backgroundColor: 'rgba(253, 240, 240, 0.12)',
     borderWidth: 1,
-    borderColor: '#F5C6CB',
+    borderColor: 'rgba(245, 198, 203, 0.55)',
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  logoutPillText: { color: COLORS.wrong, fontWeight: '800', fontSize: 13 },
+  logoutPillText: { color: '#F5C6CB', fontWeight: '800', fontSize: 13 },
   logoutModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(20,40,61,0.45)',
@@ -243,4 +243,46 @@ export const adminStyles = StyleSheet.create({
   tabText: { color: COLORS.textMuted, fontWeight: '800', fontSize: 13 },
   tabTextOn: { color: COLORS.textWhite },
   empty: { color: COLORS.textMuted, textAlign: 'center', marginTop: 24, fontSize: 14 },
+
+  // Ops-style hero — intentionally not the student study photo.
+  consoleHero: {
+    height: 168,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 14,
+    backgroundColor: COLORS.adminHero,
+    justifyContent: 'flex-end',
+  },
+  consoleHeroImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  consoleHeroScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(12, 18, 28, 0.62)',
+  },
+  consoleHeroContent: {
+    padding: 16,
+  },
+  consoleHeroKicker: {
+    color: COLORS.gold,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  consoleHeroTitle: {
+    color: COLORS.textWhite,
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  consoleHeroBody: {
+    color: COLORS.textOnDark,
+    fontSize: 13,
+    lineHeight: 18,
+    maxWidth: 320,
+  },
 });
