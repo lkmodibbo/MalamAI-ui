@@ -163,10 +163,11 @@ export default function AdminDashboardScreen({ navigation }) {
 
         <Text style={styles.cardTitle}>Shortcuts</Text>
         {[
-          { label: 'Registered users', tab: 'AdminUsers' },
-          { label: 'Student leaderboard', tab: 'AdminBoard' },
-          { label: 'Upload past questions', tab: 'AdminUpload' },
+          { label: 'Registered users',        tab: 'AdminUsers' },
+          { label: 'Student leaderboard',      tab: 'AdminBoard' },
+          { label: 'Upload past questions',    tab: 'AdminUpload' },
           { label: 'Subjects, topics & practice', route: 'AdminContent' },
+          { label: 'AI usage & question review', tab: 'AdminAiStats' },
         ].map((item) => (
           <TouchableOpacity
             key={item.tab || item.route}

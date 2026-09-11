@@ -42,6 +42,7 @@ import AdminLeaderboardScreen from '../screens/admin/AdminLeaderboardScreen';
 import AdminPastQuestionsScreen from '../screens/admin/AdminPastQuestionsScreen';
 import AdminContentScreen from '../screens/admin/AdminContentScreen';
 import AdminAuditScreen from '../screens/admin/AdminAuditScreen';
+import AdminAiStatsScreen from '../screens/admin/AdminAiStatsScreen';
 import AdminSidebar from '../components/AdminSidebar';
 
 const Stack = createNativeStackNavigator();
@@ -136,7 +137,8 @@ function AdminTabs() {
             <Tab.Screen name="AdminUsers" component={AdminUsersScreen} />
             <Tab.Screen name="AdminBoard" component={AdminLeaderboardScreen} />
             <Tab.Screen name="AdminUpload" component={AdminPastQuestionsScreen} />
-            <Tab.Screen name="AdminAudit" component={AdminAuditScreen} />
+            <Tab.Screen name="AdminAudit"   component={AdminAuditScreen} />
+            <Tab.Screen name="AdminAiStats" component={AdminAiStatsScreen} />
             <Tab.Screen name="AdminContent" component={AdminContentScreen} />
           </Tab.Navigator>
           {/* Rendered after the tabs so it stays above screen headers. */}

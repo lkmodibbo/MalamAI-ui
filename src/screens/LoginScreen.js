@@ -82,7 +82,7 @@ function ForgotPasswordView({ onBack }) {
           Check your inbox and spam folder.
         </Text>
         <TouchableOpacity style={styles.linkBtn} onPress={onBack}>
-          <Text style={styles.linkBtnText}>← Back to login</Text>
+          <Text style={styles.linkBtnText}>Back to login</Text>
         </TouchableOpacity>
       </View>
     );
@@ -91,7 +91,7 @@ function ForgotPasswordView({ onBack }) {
   return (
     <View>
       <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
       <Text style={styles.forgotTitle}>Reset password</Text>
       <Text style={styles.forgotSub}>
@@ -128,7 +128,7 @@ function ForgotPasswordView({ onBack }) {
             >
               {isSubmitting
                 ? <ActivityIndicator color="#ffffff" />
-                : <Text style={styles.submitBtnText}>Send reset link →</Text>}
+                : <Text style={styles.submitBtnText}>Send reset link</Text>}
             </TouchableOpacity>
           </View>
         )}
@@ -380,7 +380,7 @@ export default function LoginScreen({ navigation }) {
                       {isSubmitting
                         ? <ActivityIndicator color="#ffffff" />
                         : <Text style={styles.submitBtnText}>
-                            {mode === 'login' ? 'Login →' : 'Create Account →'}
+                            {mode === 'login' ? 'Login' : 'Create Account'}
                           </Text>
                       }
                     </TouchableOpacity>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { callGrok, getStepByStepPrompt, buildWhyWrongPrompt } from '../services/grok';
 import { COLORS } from '../constants/colors';
-import { saveQuizAttempt } from '../services/apiService'; // NEW
+import { saveQuizAttempt, generateAiContent } from '../services/apiService';
 import { markQuizDone } from '../hooks/useSetupProgress';
 
 export default function ScoreScreen({ route, navigation }) {
@@ -84,16 +83,12 @@ export default function ScoreScreen({ route, navigation }) {
         ? `${correctOption}. ${item.options?.[correctOption] || ''}`
         : 'Not available';
 
-      const prompt = buildWhyWrongPrompt(
-        item.question,
-        selectedOption,
-        selectedText,
-        correctOption,
-        correctText,
-      );
-
-      const text = await callGrok(prompt);
-      setWhyWrongResponses((prev) => ({ ...prev, [key]: text }));
+      const data = await generateAiContent('why_wrong', {
+        question:       item.question,
+        selectedOption: `${selectedOption}. ${selectedText}`,
+        correctOption:  `${correctOption}. ${correctText}`,
+      });
+      setWhyWrongResponses((prev) => ({ ...prev, [key]: data.result }));
     } catch (err) {
       console.warn('[ScoreScreen] fetch why-wrong failed', err);
       setWhyWrongErrors((prev) => ({

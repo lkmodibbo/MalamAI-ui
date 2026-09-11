@@ -4,9 +4,9 @@ import {
   Text, TouchableOpacity, View, StyleSheet, AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { callGrok, normalizeQuestionList, parseQuestionJson } from '../services/grok';
+import { normalizeQuestionList, parseQuestionJson } from '../services/grok';
 import SUBJECTS from '../constants/subjects';
-import { getQuestionsFromDB, saveAiQuestions } from '../services/apiService';
+import { getQuestionsFromDB, saveAiQuestions, generateAiContent } from '../services/apiService';
 import SubjectBadge from '../components/SubjectBadge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -17,10 +17,6 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function getSubjectPrompt(subjectName) {
-  return `You are MalamAI, a JAMB tutor. Generate exactly ${QUESTION_COUNT} unique multiple choice JAMB-style questions for "${subjectName}". Each question must have four options A, B, C, D and one correct answer. Return valid JSON only, no markdown, no extra text:\n{\n  "questions": [\n    {\n      "question": "...",\n      "options": {"A": "...", "B": "...", "C": "...", "D": "..."},\n      "answer": "A",\n      "explanation": "..."\n    }\n  ]\n}`;
 }
 
 export default function MockExamScreen({ route, navigation }) {
@@ -91,8 +87,11 @@ export default function MockExamScreen({ route, navigation }) {
           let questions = await getQuestionsFromDB(subject.id, null, QUESTION_COUNT);
           if (questions.length < QUESTION_COUNT) {
             try {
-              const raw = await callGrok(getSubjectPrompt(subject.name));
-              questions = normalizeQuestionList(parseQuestionJson(raw), QUESTION_COUNT);
+              const data = await generateAiContent('questions', {
+                subject: subject.name,
+                count:   QUESTION_COUNT,
+              });
+              questions = normalizeQuestionList(parseQuestionJson(data.result), QUESTION_COUNT);
               saveAiQuestions(subject.id, null, questions).catch(() => {});
             } catch (aiErr) {
               if (!questions.length) throw aiErr;

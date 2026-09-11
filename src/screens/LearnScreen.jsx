@@ -5,18 +5,13 @@ import useSRS from '../hooks/useSRS';
 import useWeaknessTracker from '../hooks/useWeaknessTracker';
 import useNotes from '../hooks/useNotes';
 import FlashcardScreen from './FlashcardScreen';
-import { callGrok, parseQuestionJson, normalizeQuestionList, isQuotaError } from '../services/grok';
-import { getMode, getSystemPrompt } from '../hooks/useLanguageMode';
+import { parseQuestionJson, normalizeQuestionList } from '../services/grok';
 import { COLORS } from '../constants/colors';
-import { getQuestionsFromDB, gradeQuiz } from '../services/apiService';
+import { getQuestionsFromDB, gradeQuiz, generateAiContent } from '../services/apiService';
 import { markTopicVisited } from '../hooks/useSetupProgress';
 import SubjectBadge from '../components/SubjectBadge';
 
-// Using Grok API for generating learning content.
-// The API key and endpoint must come from environment variables.
-// If credentials are missing, callGrok will throw a clear error.
 
-const QUOTA_ERROR_MESSAGE = 'Grok quota is exhausted right now. Please try fetching the questions again soon.';
 const QUIZ_TIME_SECONDS = 5 * 60;
 const QUESTION_COUNT = 5;
 
@@ -81,37 +76,20 @@ export default function LearnScreen({ route, navigation }) {
     setLoading(true);
     try {
       const subjectName = subject?.name || 'this subject';
-      const learnTopic = topic || subjectName;
-      const languageMode = await getMode();
-      const systemPrompt = getSystemPrompt(languageMode);
-
-      const learnPrompt = `
-        ${systemPrompt}
-
-        Explain the topic "${learnTopic}" in simple terms, using relatable Nigerian examples.
-        Keep the language style appropriate for a JAMB student. End the explanation with the phrase:
-        Ready to test yourself?
-
-        - Use short paragraphs, not walls of text.
-        - Use relatable Nigerian examples (markets, farms, local contexts, everyday life).
-        - Teach at SS2/SS3 level, not university level. Keep it simple and clear.
-        - End with "Ready to test yourself?" to encourage the student to practise.
-      `;
-      const text = await callGrok(learnPrompt);
-      setExplanation(typeof text === 'string' ? text : JSON.stringify(text));
-      markTopicVisited(); // track progress milestone
+      const learnTopic  = topic || subjectName;
+      const data = await generateAiContent('explanation', {
+        subject: subjectName,
+        topic:   learnTopic,
+      });
+      setExplanation(typeof data.result === 'string' ? data.result : JSON.stringify(data.result));
+      markTopicVisited();
     } catch (err) {
       console.error('[fetchExplanation]', err);
-
-      if (isQuotaError(err)) {
-        const retryText = err.retryDelay
-          ? ` You can retry Grok in about ${err.retryDelay} seconds.`
-          : '';
-        setExplanation(`${getFallbackExplanation(subject, topic)}\n\n${retryText}`);
+      if (err.message?.includes('daily limit')) {
+        setExplanation(`You have reached your daily AI limit.\n\n${getFallbackExplanation(subject, topic)}`);
         return;
       }
-
-      setExplanation('Sorry — could not get explanation. Please try again later.');
+      setExplanation(getFallbackExplanation(subject, topic));
       Alert.alert('Error', err.message || 'Failed to fetch explanation.');
     } finally {
       setLoading(false);
@@ -189,24 +167,17 @@ export default function LearnScreen({ route, navigation }) {
       }
     }
 
-    // STEP 2 — Fall back to Groq if database has no questions
+    // STEP 2 — Fall back to backend AI if database has no questions
     if (nextQuestions.length < maxQuestions) {
-      console.log('[fetchQuestions] database empty — using Groq AI...');
-      const languageMode  = await getMode();
-      const systemPrompt  = getSystemPrompt(languageMode);
-      const practicePrompt = `
-        ${systemPrompt}
-          Generate exactly ${maxQuestions} unique JAMB-style MCQ questions
-          on "${practiceTopic}" in "${subjectName}".
-          Return valid JSON only — no markdown.
-          Format: { "questions": [{ "question":"","options":{"A":"","B":"","C":"","D":""},"answer":"A","explanation":"" }] }
-        `;
-        const text     = await callGrok(practicePrompt);
-        const parsed   = parseQuestionJson(String(text));
-        nextQuestions  = normalizeQuestionList(parsed, maxQuestions);
-        // AI questions stay session-local. Writing them into the shared bank is
-        // an admin action — students must not invent global content.
-      }
+      console.log('[fetchQuestions] database empty — using backend AI...');
+      const data = await generateAiContent('questions', {
+        subject: subject?.name || 'this subject',
+        topic:   practiceTopic,
+        count:   maxQuestions,
+      });
+      const parsed  = parseQuestionJson(String(data.result));
+      nextQuestions = normalizeQuestionList(parsed, maxQuestions);
+    }
 
     setQuestions(nextQuestions);
     setCurrentQuestionIndex(0);
@@ -215,10 +186,8 @@ export default function LearnScreen({ route, navigation }) {
 
   } catch (err) {
     console.error('[fetchQuestions]', err);
-    if (isQuotaError(err)) {
-      setQuestionError(err.retryDelay
-        ? `${QUOTA_ERROR_MESSAGE} Retry in ${err.retryDelay}s.`
-        : QUOTA_ERROR_MESSAGE);
+    if (err.message?.includes('daily limit')) {
+      setQuestionError('You have reached your daily AI generation limit. Come back tomorrow!');
       return;
     }
     setQuestionError(err.message || 'Failed to fetch questions.');

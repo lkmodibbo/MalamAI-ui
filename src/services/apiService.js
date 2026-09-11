@@ -567,3 +567,118 @@ export async function saveAiQuestions(subjectId, topicId, questions) {
     }),
   });
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AI  (all calls proxied through backend — keys never leave the server)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * Send a multi-turn chat message to Malam AI.
+ * @param {Array<{role: string, content: string}>} messages
+ * @param {number|null} conversationId  — pass to persist the exchange to a conversation
+ * @returns {Promise<{reply: string, usage: {used: number, limit: number}}>}
+ */
+export async function sendAiChat(messages, conversationId = null) {
+  return await request('/ai/chat', {
+    method: 'POST',
+    requireAuth: true,
+    timeout: 30000,
+    body: JSON.stringify({
+      messages,
+      ...(conversationId && { conversation_id: conversationId }),
+    }),
+  });
+}
+
+/**
+ * Generate AI content (explanation, questions, flashcards, step_by_step, why_wrong).
+ *
+ * @param {'explanation'|'questions'|'flashcards'|'step_by_step'|'why_wrong'} type
+ * @param {object} params  — subject, topic, question, selectedOption, correctOption, count
+ * @returns {Promise<{result: string, cached: boolean, usage: object}>}
+ */
+export async function generateAiContent(type, params = {}) {
+  return await request('/ai/generate', {
+    method: 'POST',
+    requireAuth: true,
+    timeout: 30000,
+    body: JSON.stringify({ type, ...params }),
+  });
+}
+
+/**
+ * Fetch today's remaining AI usage for the logged-in student.
+ * @returns {Promise<{chat: {used, limit}, generate: {used, limit}}>}
+ */
+export async function getAiUsage() {
+  return await request('/ai/usage', { requireAuth: true });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AI CONVERSATIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export async function getConversations() {
+  return await request('/ai/conversations', { requireAuth: true });
+}
+
+export async function createConversation(title = 'New Chat') {
+  return await request('/ai/conversations', {
+    method: 'POST',
+    requireAuth: true,
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function getConversation(id) {
+  return await request(`/ai/conversations/${id}`, { requireAuth: true });
+}
+
+export async function renameConversation(id, title) {
+  return await request(`/ai/conversations/${id}`, {
+    method: 'PATCH',
+    requireAuth: true,
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function deleteConversation(id) {
+  return await request(`/ai/conversations/${id}`, {
+    method: 'DELETE',
+    requireAuth: true,
+  });
+}
+
+/**
+ * Generate (or return cached) today's personalised study plan.
+ * The backend builds it from the student's profile + weak topics + exam date.
+ * @returns {Promise<{plan: {plan: Array, summary: string}, cached: boolean}>}
+ */
+export async function getAiStudyPlan() {
+  return await request('/ai/study-plan', {
+    method: 'POST',
+    requireAuth: true,
+    timeout: 30000,
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADMIN — AI STATS & QUESTION REVIEW
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export async function getAdminAiStats() {
+  return await request('/admin/ai-stats', { requireAuth: true });
+}
+
+export async function getAdminAiQuestions({ status = 'pending', page = 1, limit = 20 } = {}) {
+  const params = new URLSearchParams({ status, page: String(page), limit: String(limit) });
+  return await request(`/admin/ai-questions?${params}`, { requireAuth: true });
+}
+
+export async function approveAdminAiQuestion(id) {
+  return await request(`/admin/ai-questions/${id}/approve`, { method: 'PATCH', requireAuth: true });
+}
+
+export async function rejectAdminAiQuestion(id) {
+  return await request(`/admin/ai-questions/${id}/reject`, { method: 'PATCH', requireAuth: true });
+}

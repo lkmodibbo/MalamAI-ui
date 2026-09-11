@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, PanResponder } from 'react-native';
 import FlashCard from './FlashCard';
-import { callGrok, parseQuestionJson, buildFlashcardPrompt } from '../services/grok';
+import { parseQuestionJson } from '../services/grok';
+import { generateAiContent } from '../services/apiService';
 
 function extractCardTip(rawBack) {
   const cleaned = String(rawBack || '').trim();
@@ -45,10 +46,12 @@ export default function FlashcardScreen({ subject, topic, startPractice }) {
     setFlipped(false);
 
     try {
-      const prompt = buildFlashcardPrompt(displayTopic, subjectName);
-      const response = await callGrok(prompt);
-      const parsed = parseQuestionJson(response);
-      const cards = Array.isArray(parsed?.cards) ? parsed.cards : [];
+      const data = await generateAiContent('flashcards', {
+        subject: subjectName,
+        topic:   displayTopic,
+      });
+      const parsed = parseQuestionJson(data.result);
+      const cards  = Array.isArray(parsed?.cards) ? parsed.cards : [];
 
       if (cards.length === 0) {
         throw new Error('Grok did not return any flashcards.');

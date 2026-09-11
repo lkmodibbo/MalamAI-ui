@@ -17,12 +17,13 @@ import { COLORS } from '../constants/colors';
 const ANIMATION_MS = 220;
 
 export const ADMIN_NAV_ITEMS = [
-  { label: 'Overview', route: 'AdminHome' },
-  { label: 'Users', route: 'AdminUsers' },
+  { label: 'Overview',   route: 'AdminHome' },
+  { label: 'Users',      route: 'AdminUsers' },
   { label: 'Leaderboard', route: 'AdminBoard' },
-  { label: 'Upload', route: 'AdminUpload' },
-  { label: 'Content', route: 'AdminContent' },
-  { label: 'Audit', route: 'AdminAudit' },
+  { label: 'Upload',     route: 'AdminUpload' },
+  { label: 'Content',    route: 'AdminContent' },
+  { label: 'Audit',      route: 'AdminAudit' },
+  { label: 'AI Monitor', route: 'AdminAiStats' },
 ];
 
 export default function AdminSidebar({ visible, onClose, onNavigate, activeRoute }) {
